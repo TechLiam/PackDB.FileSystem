@@ -1,0 +1,57 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">C:\Users\Liam\AppData\Local\JetBrains\Rider2020.3\resharper-host\temp\Rider\vAny\CoverageData\_PackDB.1320275788\Snapshot\snapshot.utdcvr</s:String>
+	
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=4e898d78_002D86a2_002D41d9_002D931e_002D41f3a1b755db/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="DataManagerTester" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::38BA8F2C-91E9-4CED-A416-FADF512707AC::.NETCoreApp,Version=v3.1::PackDB.Core.Tests.DataManagerTester&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteFailsToGetLock&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteFailsToGetLockWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteFailsToWriteDataToStream&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteFailsToWriteDataToStreamWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteSuccessfulFirstTime&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteSuccessfulAfterRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteFailsToWriteDataToStreamDueToException&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteFailsToWriteDataToStreamDueToExceptionWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.CommitFailsToCloseStream&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.CommitFailsToCloseStreamWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.CommitSuccessful&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.CommitSuccessfulWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.CommitFailsToCloseStreamDueToExceptionWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.CommitFailsToCloseStreamDueToException&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.DiscardChanges&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteAndCommitFailsToGetLock&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteAndCommitFailsToWriteDataToStream&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteAndCommitFailsToWriteDataToStreamDueToException&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteAndCommitFailsToCloseStream&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.WriteAndCommitSuccessful&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.ReadFailsToGetLock&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.ReadFailsDueToReadThrowingAnException&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.ReadSuccessful&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.ReadSuccessfulWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.ReadFailsDueToReadThrowingAnExceptionWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.ReadFailsToGetLockWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.ExistsReturnsFalse&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.ExistsReturnsTrue&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.DeleteHardDeleteReturnsFalse&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.DeleteHardDeleteReturnsTrue&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.DeleteSoftDeleteReturnsTrue&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.DeleteSoftDeleteReturnsFalse&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.RestoreSoftDeleteDataReturnsTrue&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.RestoreSoftDeleteDataReturnsFalse&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileDataWorkerTester.RollbackWithRetry&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.GetLockForFileWaitFails&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.GetLockForFileWaitSuccess&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.GetLockForFileCreateOnlyOneSemaphore&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.UnlockFileWhenThereIsNoLock&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.UnlockFileWhenThereIsALockMultipleTimes&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.WriteDataToStreamNewStreamNeeded&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.UnlockFileWhenThereIsALock&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.WriteDataToStreamMultipleTimes&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.ReadDataFromStreamMultipleTimes&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.ReadDataFromStreamNewStreamNeeded&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.CloseStreamWhenThereIsNoStream&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.CloseStreamWhenThereIsAStream&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.CloseStreamWhenThereIsAReadStream&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
