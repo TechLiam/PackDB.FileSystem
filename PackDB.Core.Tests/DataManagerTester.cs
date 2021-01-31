@@ -6,6 +6,7 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using PackDB.Core.Auditing;
 using PackDB.Core.Data;
+using PackDB.Core.Indexing;
 
 namespace PackDB.Core.Tests
 {
@@ -71,10 +72,10 @@ namespace PackDB.Core.Tests
 
             MockIndexer = new Mock<IIndexWorker>();
             MockIndexer
-                .Setup(x => x.IndexExist("IndexedValue"))
+                .Setup(x => x.IndexExist<IndexedEntity>("IndexedValue"))
                 .Returns(true);
             MockIndexer
-                .Setup(x => x.GetIdsFromIndex("IndexedValue",ExpectedIndexedEntity.IndexedValue))
+                .Setup(x => x.GetIdsFromIndex<IndexedEntity,string>("IndexedValue",ExpectedIndexedEntity.IndexedValue))
                 .Returns(new List<int>(){ExpectedIndexedEntity.Id});
             MockIndexer
                 .Setup(x => x.Index(ExpectedBasicEntity))
@@ -141,13 +142,13 @@ namespace PackDB.Core.Tests
         public void ReadWhenIndexPropertyIsNotIndexed()
         {
             Assert.IsNull(DataManager.ReadIndex<BasicEntity,string>(ExpectedBasicEntity.Value1,x => x.Value1));
-            MockIndexer.Verify(x => x.IndexExist(It.IsAny<string>()),Times.Never);
+            MockIndexer.Verify(x => x.IndexExist<BasicEntity>(It.IsAny<string>()),Times.Never);
         }
         
         [Test(Author = "PackDB Creator")]
         public void ReadWhenIndexDoesNotExist()
         {
-            MockIndexer.Setup(x => x.IndexExist("IndexedValue")).Returns(false);
+            MockIndexer.Setup(x => x.IndexExist<IndexedEntity>("IndexedValue")).Returns(false);
             Assert.IsNull(DataManager.ReadIndex<IndexedEntity,string>(ExpectedBasicEntity.Value1,x => x.IndexedValue));
         }
         
@@ -155,7 +156,7 @@ namespace PackDB.Core.Tests
         public void ReadWhenIndexHasNoValue()
         {
             MockIndexer
-                .Setup(x => x.GetIdsFromIndex("IndexedValue",ExpectedIndexedEntity.IndexedValue))
+                .Setup(x => x.GetIdsFromIndex<IndexedEntity,string>("IndexedValue",ExpectedIndexedEntity.IndexedValue))
                 .Returns(new List<int>());
             Assert.IsFalse(DataManager.ReadIndex<IndexedEntity,string>(ExpectedIndexedEntity.IndexedValue,x => x.IndexedValue).Any());
         }
@@ -164,7 +165,7 @@ namespace PackDB.Core.Tests
         public void ReadWhenIndexHasAValueButThereNoData()
         {
             MockIndexer
-                .Setup(x => x.GetIdsFromIndex("IndexedValue",ExpectedIndexedEntity.IndexedValue))
+                .Setup(x => x.GetIdsFromIndex<IndexedEntity,string>("IndexedValue",ExpectedIndexedEntity.IndexedValue))
                 .Returns(new List<int>(){Randomizer.Next()});
             Assert.IsFalse(DataManager.ReadIndex<IndexedEntity,string>(ExpectedIndexedEntity.IndexedValue,x => x.IndexedValue).Any(x => x != null));
         }

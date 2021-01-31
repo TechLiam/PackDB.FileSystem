@@ -1,4 +1,5 @@
 ﻿using PackDB.Core;
+using PackDB.Core.Indexing;
 
 namespace PackDB.FileSystem.IndexWorker
 {

@@ -8,8 +8,8 @@ namespace PackDB.FileSystem
     {
         bool GetLockForFile(string filename);
         void UnlockFile(string filename);
-        bool WriteDataToStream<TDataType>(string filename, TDataType data) where TDataType : DataEntity;
-        TDataType ReadDataFromStream<TDataType>(string filename) where TDataType : DataEntity;
+        bool WriteDataToStream<TDataType>(string filename, TDataType data);
+        TDataType ReadDataFromStream<TDataType>(string filename);
         bool CloseStream(string filename);
         void DisposeOfStream(string filename);
         bool Exists(string filename);

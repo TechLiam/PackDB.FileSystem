@@ -17,12 +17,12 @@ namespace PackDB.Core.MessagePackProxy
                 .WithCompression(MessagePackCompression.Lz4Block);
         }
         
-        public void Serialize<TDataType>(Stream stream, TDataType data) where TDataType : DataEntity
+        public void Serialize<TDataType>(Stream stream, TDataType data)
         {
             MessagePack.MessagePackSerializer.Serialize(stream,data,Options);
         }
 
-        public TDataType Deserialize<TDataType>(Stream stream) where TDataType : DataEntity
+        public TDataType Deserialize<TDataType>(Stream stream)
         {
             return MessagePack.MessagePackSerializer.Deserialize<TDataType>(stream,Options);
         }

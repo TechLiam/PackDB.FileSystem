@@ -5,7 +5,7 @@ namespace PackDB.Core.MessagePackProxy
 {
     public interface IMessagePackSerializer
     {
-        void Serialize<TDataType>(Stream stream, TDataType data) where TDataType : DataEntity;
-        TDataType Deserialize<TDataType>(Stream stream) where TDataType : DataEntity;
+        void Serialize<TDataType>(Stream stream, TDataType data);
+        TDataType Deserialize<TDataType>(Stream stream);
     }
 }

@@ -11,5 +11,6 @@ namespace PackDB.Core.Auditing
         bool RollbackEvent<TDataType>(TDataType data) where TDataType : DataEntity;
         bool CommitEvents<TDataType>(TDataType data) where TDataType : DataEntity;
         void DiscardEvents<TDataType>(TDataType data) where TDataType : DataEntity;
+        AuditLog ReadAllEvents<TDataType>(int id) where TDataType : DataEntity;
     }
 }

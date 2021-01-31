@@ -153,6 +153,8 @@ namespace PackDB.FileSystem.Tests
         {
             Assert.AreSame(Data,FileStreamer.ReadDataFromStream<BasicData>(Filename));
             MockFile.Verify(x => x.OpenRead(Filename), Times.Once);
+            MockReadStream.Verify(x => x.Close(), Times.Once);
+            MockReadStream.Verify(x => x.Dispose(), Times.Once);
             MockMessagePackSerializer.Verify(x => x.Deserialize<BasicData>(ReadStream), Times.Once);
         }
         
@@ -161,7 +163,7 @@ namespace PackDB.FileSystem.Tests
         {
             FileStreamer.ReadDataFromStream<BasicData>(Filename);
             Assert.AreSame(Data,FileStreamer.ReadDataFromStream<BasicData>(Filename));
-            MockFile.Verify(x => x.OpenRead(Filename), Times.Once);
+            MockFile.Verify(x => x.OpenRead(Filename), Times.Exactly(2));
             MockMessagePackSerializer.Verify(x => x.Deserialize<BasicData>(ReadStream), Times.Exactly(2));
         }
 
@@ -189,22 +191,6 @@ namespace PackDB.FileSystem.Tests
                 .Verify(x => x.Close(), Times.Never);
             MockReadStream
                 .Verify(x => x.Dispose(), Times.Never);
-            return result;
-        }
-
-        [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool CloseStreamWhenThereIsAReadStream()
-        {
-            FileStreamer.ReadDataFromStream<BasicData>(Filename);
-            var result = FileStreamer.CloseStream(Filename);
-            MockWriteStream
-                .Verify(x => x.Close(), Times.Never);
-            MockWriteStream
-                .Verify(x => x.Dispose(), Times.Never);
-            MockReadStream
-                .Verify(x => x.Close(), Times.Once);
-            MockReadStream
-                .Verify(x => x.Dispose(), Times.Once);
             return result;
         }
 
@@ -281,7 +267,7 @@ namespace PackDB.FileSystem.Tests
             MockWriteStream
                 .Verify(x => x.Dispose(), Times.Never);
             MockReadStream
-                .Verify(x => x.Close(), Times.Never);
+                .Verify(x => x.Close(), Times.Once);
             MockReadStream
                 .Verify(x => x.Dispose(), Times.Once);
         }
@@ -313,7 +299,7 @@ namespace PackDB.FileSystem.Tests
             MockWriteStream
                 .Verify(x => x.Dispose(), Times.Never);
             MockReadStream
-                .Verify(x => x.Close(), Times.Never);
+                .Verify(x => x.Close(), Times.Once);
             MockReadStream
                 .Verify(x => x.Dispose(), Times.Once);
         }

@@ -50,7 +50,7 @@ namespace PackDB.FileSystem
             }
         }
 
-        public bool WriteDataToStream<TDataType>(string filename, TDataType data) where TDataType : DataEntity
+        public bool WriteDataToStream<TDataType>(string filename, TDataType data)
         {
             if (!_fileStreams.ContainsKey(filename))
             {
@@ -60,13 +60,15 @@ namespace PackDB.FileSystem
             return true;
         }
 
-        public TDataType ReadDataFromStream<TDataType>(string filename) where TDataType : DataEntity
+        public TDataType ReadDataFromStream<TDataType>(string filename)
         {
             if (!_fileStreams.ContainsKey(filename))
             {
                 _fileStreams.Add(filename, _file.OpenRead(filename));
             }
-            return _messagePackSerializer.Deserialize<TDataType>(_fileStreams[filename].GetStream());
+            var result = _messagePackSerializer.Deserialize<TDataType>(_fileStreams[filename].GetStream());
+            CloseStream(filename);
+            return result;
         }
 
         public bool CloseStream(string filename)

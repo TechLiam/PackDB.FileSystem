@@ -25,19 +25,24 @@ namespace PackDB.FileSystem.OS
         {
         }
 
+#pragma warning disable 618
         public StreamProxy(IntPtr handle, FileAccess access) : base(handle, access)
+#pragma warning restore 618
         {
         }
-
+#pragma warning disable 618
         public StreamProxy(IntPtr handle, FileAccess access, bool ownsHandle) : base(handle, access, ownsHandle)
+#pragma warning restore 618
         {
         }
-
+#pragma warning disable 618
         public StreamProxy(IntPtr handle, FileAccess access, bool ownsHandle, int bufferSize) : base(handle, access, ownsHandle, bufferSize)
+#pragma warning disable 618
         {
         }
-
+#pragma warning disable 618
         public StreamProxy(IntPtr handle, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync) : base(handle, access, ownsHandle, bufferSize, isAsync)
+#pragma warning disable 618
         {
         }
 

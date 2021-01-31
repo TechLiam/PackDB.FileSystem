@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using PackDB.Core.Data;
 
-namespace PackDB.Core
+namespace PackDB.Core.Indexing
 {
     public interface IIndexWorker
     {
-        bool IndexExist(string indexName);
-        IEnumerable<int> GetIdsFromIndex<TKeyType>(string indexName, TKeyType indexKey);
+        bool IndexExist<TDataType>(string indexName) where TDataType : DataEntity;
+        IEnumerable<int> GetIdsFromIndex<TDataType,TKeyType>(string indexName, TKeyType indexKey) where TDataType : DataEntity;
         bool Index<TDataType>(TDataType data) where TDataType : DataEntity;
         bool Unindex<TDataType>(TDataType data) where TDataType : DataEntity;
     }

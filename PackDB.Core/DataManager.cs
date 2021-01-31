@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using PackDB.Core.Auditing;
 using PackDB.Core.Data;
+using PackDB.Core.Indexing;
 
 namespace PackDB.Core
 {
@@ -41,9 +42,9 @@ namespace PackDB.Core
             if (indexMember.IsDefined(typeof(IndexAttribute), true))
             {
                 var indexName = indexMember.Name;
-                if (IndexWorker.IndexExist(indexName))
+                if (IndexWorker.IndexExist<TDataType>(indexName))
                 {
-                    return Read<TDataType>(IndexWorker.GetIdsFromIndex(indexName, key));
+                    return Read<TDataType>(IndexWorker.GetIdsFromIndex<TDataType,TKeyType>(indexName, key));
                 }
             }
             return null;
