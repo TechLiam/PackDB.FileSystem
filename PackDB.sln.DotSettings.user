@@ -53,6 +53,7 @@
     &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.CloseStreamWhenThereIsAStream&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester.CloseStreamWhenThereIsAReadStream&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;NUnit3x::6DE2539A-96C6-4D8C-9F46-0F5E9C736D43::.NETCoreApp,Version=v3.1::PackDB.FileSystem.Tests.FileStreamerTester&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::EAF3A773-1B9A-40F9-B5CA-FF996E9C8559::.NETCoreApp,Version=v3.1::PackDB.Core.Tests.DataManagerTester&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	</wpf:ResourceDictionary>
