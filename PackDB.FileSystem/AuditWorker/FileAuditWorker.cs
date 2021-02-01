@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using PackDB.Core.Auditing;
 using PackDB.Core.Data;
@@ -22,6 +23,7 @@ namespace PackDB.FileSystem.AuditWorker
             return $"{typeof(TDataType).Name}\\{id}.audit";
         }
 
+        [ExcludeFromCodeCoverage]
         private static int MaxAttempts<TDataType>()
         {
             var attributes = typeof(TDataType).GetCustomAttributes(typeof(AuditAttribute), true)

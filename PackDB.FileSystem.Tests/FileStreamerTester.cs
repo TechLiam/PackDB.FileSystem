@@ -6,7 +6,6 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using PackDB.Core.Locks;
 using PackDB.Core.MessagePackProxy;
-using PackDB.FileSystem.DataWorker;
 using PackDB.FileSystem.OS;
 
 namespace PackDB.FileSystem.Tests
