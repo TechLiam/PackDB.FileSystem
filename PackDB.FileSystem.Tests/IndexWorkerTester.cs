@@ -70,6 +70,43 @@ namespace PackDB.FileSystem.Tests
                         }
                     }
                 });
+            MockFileStreamer
+                .Setup(x => x.WriteDataToStream(
+                    "IndexableData\\IndexValue1.index",
+                    It.Is<Index<object>>(y =>
+                        y.Keys.Count() == 2 &&
+                        y.Keys.ElementAt(0).Value == IndexKey &&
+                        y.Keys.ElementAt(1).Value == IndexData.IndexValue1 &&
+                        y.Keys.ElementAt(0).Ids.Count() == 3 &&
+                        y.Keys.ElementAt(1).Ids.Count() == 1 &&
+                        y.Keys.ElementAt(1).Ids.ElementAt(0) == IndexData.Id
+                    )
+                ))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.WriteDataToStream("IndexableData\\IndexValue1.index", 
+                    It.Is<Index<object>>(y => y.Keys.Count() == 1 &&
+                                              y.Keys.ElementAt(0).Value == IndexData.IndexValue1 &&
+                                              y.Keys.ElementAt(0).Ids.Count() == 1 &&
+                                              y.Keys.ElementAt(0).Ids.ElementAt(0) == IndexData.Id)))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.WriteDataToStream(
+                        "IndexableData\\IndexValue1.index", 
+                        It.Is<Index<object>>(y => 
+                            y.Keys.Count() == 1 &&
+                            y.Keys.ElementAt(0).Value == IndexKey &&
+                            y.Keys.ElementAt(0).Ids.Count() == 4 &&
+                            y.Keys.ElementAt(0).Ids.ElementAt(0) == ExpectedIds.ElementAt(0) &&
+                            y.Keys.ElementAt(0).Ids.ElementAt(1) == ExpectedIds.ElementAt(1) &&
+                            y.Keys.ElementAt(0).Ids.ElementAt(2) == ExpectedIds.ElementAt(2) &&
+                            y.Keys.ElementAt(0).Ids.ElementAt(3) == IndexData.Id
+                        )
+                    ))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.CloseStream("IndexableData\\IndexValue1.index"))
+                .Returns(true);
             
             FileIndexWorker = new FileIndexWorker(MockFileStreamer.Object);
         }
@@ -253,8 +290,8 @@ namespace PackDB.FileSystem.Tests
                         "IndexableData\\IndexValue1.index", 
                         It.Is<Index<object>>(y => 
                             y.Keys.Count() == 2 &&
-                            y.Keys.ElementAt(0).Value == IndexKey &&
-                            y.Keys.ElementAt(1).Value == IndexData.IndexValue1 &&
+                            y.Keys.ElementAt(0).Value.Equals(IndexKey) &&
+                            y.Keys.ElementAt(1).Value.Equals(IndexData.IndexValue1) &&
                             y.Keys.ElementAt(0).Ids.Count() == 3 &&
                             y.Keys.ElementAt(1).Ids.Count() == 1 &&
                             y.Keys.ElementAt(1).Ids.ElementAt(0) == IndexData.Id
@@ -262,5 +299,43 @@ namespace PackDB.FileSystem.Tests
                     ), Times.Once);
             return result;
         }
+        
+        [Test(Author = "PackDB Creator", ExpectedResult = false)]
+        public bool IndexWhenWriteDataToStreamFails()
+        {
+            MockFileStreamer
+                .Setup(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<Index<object>>()))
+                .Returns(false);
+            var result = FileIndexWorker.Index(IndexData);
+            MockFileStreamer
+                .Verify(x => 
+                    x.WriteDataToStream(
+                        "IndexableData\\IndexValue1.index", 
+                        It.IsAny<Index<object>>()
+                    ), Times.Once);
+            return result;
+        }
+
+        [Test(Author = "PackDB Creator", ExpectedResult = false)]
+        public bool IndexWhenCloseStreamFails()
+        {
+            MockFileStreamer
+                .Setup(x => x.CloseStream(It.IsAny<string>()))
+                .Returns(false);
+            var result = FileIndexWorker.Index(IndexData);
+            MockFileStreamer
+                .Verify(x =>
+                    x.WriteDataToStream(
+                        "IndexableData\\IndexValue1.index",
+                        It.IsAny<Index<object>>()
+                    ), Times.Once);
+            MockFileStreamer
+                .Verify(x => 
+                    x.CloseStream(
+                        "IndexableData\\IndexValue1.index"
+                    ), Times.Once);
+            return result;
+        }
+
     }
 }

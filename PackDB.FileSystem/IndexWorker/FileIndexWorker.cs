@@ -39,18 +39,28 @@ namespace PackDB.FileSystem.IndexWorker
                 .GetProperties()
                 .Where(x => x.GetCustomAttributes(typeof(IndexAttribute), true).Any())
                 .ToArray();
+            if (!indexProperties.Any())
+            {
+                return false;
+            }
+            var indexSuccess = true;
             foreach (var indexProperty in indexProperties)
             {
                 var indexName = indexProperty.Name;
                 Index<object> index;
                 var indexKey = indexProperty.GetValue(data);
                 var indexFileName = GetFileName<TDataType>(indexName);
+                var hasChanges = false;
                 if (IndexExist<TDataType>(indexName))
                 {
                     index = FileStreamer.ReadDataFromStream<Index<object>>(indexFileName);
                     var otherKeys = index.Keys
                         .Where(x => !x.Value.Equals(indexKey) && x.Ids.Any(y => y == data.Id))
                         .ToArray();
+                    if (otherKeys.Any())
+                    {
+                        hasChanges = true;
+                    }
                     foreach (var otherKey in otherKeys)
                     {
                         otherKey.Ids.Remove(data.Id);
@@ -63,16 +73,14 @@ namespace PackDB.FileSystem.IndexWorker
                             Value = indexKey,
                             Ids = new int[]{data.Id}
                         });
+                        hasChanges = true;
                     }
                     else
                     {
                         if (key.Ids.All(x => x != data.Id))
                         {
                             key.Ids.Add(data.Id);
-                        }
-                        else
-                        {
-                            return true;
+                            hasChanges = true;
                         }
                     }
                 }
@@ -92,19 +100,28 @@ namespace PackDB.FileSystem.IndexWorker
                             }
                         }
                     };
+                    hasChanges = true;
                 }
-
-                if (FileStreamer.WriteDataToStream(indexFileName, index))
+                if (hasChanges)
                 {
-                    return FileStreamer.CloseStream(indexFileName);
+                    if (FileStreamer.WriteDataToStream(indexFileName, index))
+                    {
+                        if (!FileStreamer.CloseStream(indexFileName))
+                        {
+                            indexSuccess = false;
+                        }
+                    }
+                    else
+                    {
+                        indexSuccess = false;
+                    }
                 }
             }
-            return false;
+            return indexSuccess;
         }
 
         public bool Unindex<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            
             throw new System.NotImplementedException();
         }
 
