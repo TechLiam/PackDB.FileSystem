@@ -337,5 +337,246 @@ namespace PackDB.FileSystem.Tests
             return result;
         }
 
+        [Test(Author = "PackDB Creator", ExpectedResult = false)]
+        public bool UnindexDataTypeWithNoIndexedProperties()
+        {
+            return FileIndexWorker.Unindex(new BasicData());
+        }
+        
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
+        public bool UnindexWhenIndexDoesNotExist()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists("IndexableData\\IndexValue1.index"))
+                .Returns(false);
+            var result = FileIndexWorker.Unindex(IndexData);
+            MockFileStreamer
+                .Verify(x => x.ReadDataFromStream<Index<object>>(It.IsAny<string>()),Times.Never);
+            return result;
+        }
+        
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
+        public bool UnindexWhenIndexIsEmpty()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists("IndexableData\\IndexValue1.index"))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("IndexableData\\IndexValue1.index"))
+                .Returns(new Index<object>());
+            var result = FileIndexWorker.Unindex(IndexData);
+            MockFileStreamer
+                .Verify(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<Index<object>>()), Times.Never);
+            return result;
+        }
+
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
+        public bool UnindexWhenIndexHasNoKeys()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists("IndexableData\\IndexValue1.index"))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("IndexableData\\IndexValue1.index"))
+                .Returns(new Index<object>()
+                {
+                    Keys = new List<IndexKey<object>>()
+                });
+            var result = FileIndexWorker.Unindex(IndexData);
+            MockFileStreamer
+                .Verify(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<Index<object>>()), Times.Never);
+            return result;
+        }
+        
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
+        public bool UnindexWhenIndexHasKeysButNotTheOneNeeded()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists("IndexableData\\IndexValue1.index"))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("IndexableData\\IndexValue1.index"))
+                .Returns(new Index<object>()
+                {
+                    Keys = new List<IndexKey<object>>()
+                    {
+                        new IndexKey<object>()
+                        {
+                            Value = Randomizer.GetString(),
+                            Ids = new List<int>()
+                        }
+                    }
+                });
+            var result = FileIndexWorker.Unindex(IndexData);
+            MockFileStreamer
+                .Verify(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<Index<object>>()), Times.Never);
+            return result;
+        }
+        
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
+        public bool UnindexWhenIndexHasKeysButNotTheId()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists("IndexableData\\IndexValue1.index"))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("IndexableData\\IndexValue1.index"))
+                .Returns(new Index<object>()
+                {
+                    Keys = new List<IndexKey<object>>()
+                    {
+                        new IndexKey<object>()
+                        {
+                            Value = IndexData.IndexValue1,
+                            Ids = new List<int>()
+                            {
+                                Randomizer.Next()
+                            }
+                        }
+                    }
+                });
+            var result = FileIndexWorker.Unindex(IndexData);
+            MockFileStreamer
+                .Verify(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<Index<object>>()), Times.Never);
+            return result;
+        }
+        
+        [Test(Author = "PackDB Creator", ExpectedResult = false)]
+        public bool UnindexWhenIndexHasKeyAndIdButWriteFails()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists("IndexableData\\IndexValue1.index"))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("IndexableData\\IndexValue1.index"))
+                .Returns(new Index<object>()
+                {
+                    Keys = new List<IndexKey<object>>()
+                    {
+                        new IndexKey<object>()
+                        {
+                            Value = IndexData.IndexValue1,
+                            Ids = new List<int>()
+                            {
+                                Randomizer.Next(),
+                                IndexData.Id
+                            }
+                        }
+                    }
+                });
+            var result = FileIndexWorker.Unindex(IndexData);
+            MockFileStreamer
+                .Verify(x => x.WriteDataToStream("IndexableData\\IndexValue1.index", It.Is<Index<object>>(y => y.Keys.Count() == 1)), Times.Once);
+            MockFileStreamer
+                .Verify(x => x.CloseStream("IndexableData\\IndexValue1.index"), Times.Never);
+            return result;
+        }
+
+        [Test(Author = "PackDB Creator", ExpectedResult = false)]
+        public bool UnindexWhenIndexHasKeyAndIdButCloseFails()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists("IndexableData\\IndexValue1.index"))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("IndexableData\\IndexValue1.index"))
+                .Returns(new Index<object>()
+                {
+                    Keys = new List<IndexKey<object>>()
+                    {
+                        new IndexKey<object>()
+                        {
+                            Value = IndexData.IndexValue1,
+                            Ids = new List<int>()
+                            {
+                                Randomizer.Next(),
+                                IndexData.Id
+                            }
+                        }
+                    }
+                });
+            MockFileStreamer
+                .Setup(x => x.WriteDataToStream("IndexableData\\IndexValue1.index", It.Is<Index<object>>(y => y.Keys.Count() == 1)))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.CloseStream("IndexableData\\IndexValue1.index"))
+                .Returns(false);
+            var result = FileIndexWorker.Unindex(IndexData);
+            MockFileStreamer
+                .Verify(x => x.CloseStream("IndexableData\\IndexValue1.index"), Times.Once);
+            return result;
+        }
+
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
+        public bool UnindexWhenIndexHasKeyAndIdAndSaveSuccess()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists("IndexableData\\IndexValue1.index"))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("IndexableData\\IndexValue1.index"))
+                .Returns(new Index<object>()
+                {
+                    Keys = new List<IndexKey<object>>()
+                    {
+                        new IndexKey<object>()
+                        {
+                            Value = IndexData.IndexValue1,
+                            Ids = new List<int>()
+                            {
+                                Randomizer.Next(),
+                                IndexData.Id
+                            }
+                        }
+                    }
+                });
+            MockFileStreamer
+                .Setup(x => x.WriteDataToStream("IndexableData\\IndexValue1.index", It.Is<Index<object>>(y => y.Keys.Count() == 1)))
+                .Returns(true);
+            var result = FileIndexWorker.Unindex(IndexData);
+            MockFileStreamer
+                .Verify(x => x.CloseStream("IndexableData\\IndexValue1.index"), Times.Once);
+            return result;
+        }
+
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
+        public bool UnindexWhenIndexHasKeyAndOnlyTheIdAndSaveSuccess()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists("IndexableData\\IndexValue1.index"))
+                .Returns(true);
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("IndexableData\\IndexValue1.index"))
+                .Returns(new Index<object>()
+                {
+                    Keys = new List<IndexKey<object>>()
+                    {
+                        new IndexKey<object>()
+                        {
+                            Value = IndexData.IndexValue1,
+                            Ids = new List<int>()
+                            {
+                                IndexData.Id
+                            }
+                        },
+                        new IndexKey<object>()
+                        {
+                            Value = Randomizer.GetString(),
+                            Ids = new List<int>()
+                            {
+                                Randomizer.Next()
+                            }
+                        }
+                    }
+                });
+            MockFileStreamer
+                .Setup(x => x.WriteDataToStream("IndexableData\\IndexValue1.index", It.Is<Index<object>>(y => y.Keys.Count() == 1)))
+                .Returns(true);
+            var result = FileIndexWorker.Unindex(IndexData);
+            MockFileStreamer
+                .Verify(x => x.CloseStream("IndexableData\\IndexValue1.index"), Times.Once);
+            return result;
+        }
+
     }
 }

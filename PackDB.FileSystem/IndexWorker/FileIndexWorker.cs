@@ -122,7 +122,55 @@ namespace PackDB.FileSystem.IndexWorker
 
         public bool Unindex<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            throw new System.NotImplementedException();
+            var indexProperties = typeof(TDataType)
+                .GetProperties()
+                .Where(x => x.GetCustomAttributes(typeof(IndexAttribute), true).Any())
+                .ToArray();
+            if (!indexProperties.Any())
+            {
+                return false;
+            }
+            var unindexSuccess = true;
+            foreach (var indexProperty in indexProperties)
+            {
+                var indexName = indexProperty.Name;
+                if (IndexExist<TDataType>(indexName))
+                {
+                    var indexFileName = GetFileName<TDataType>(indexName);
+                    var index = FileStreamer.ReadDataFromStream<Index<object>>(indexFileName);
+                    if (index.Keys is null)
+                    {
+                        continue;
+                    }
+                    var keys = index.Keys
+                        .Where(x => x.Ids.Any(y => y == data.Id))
+                        .ToArray();
+                    if (!keys.Any())
+                    {
+                        continue;
+                    }
+                    foreach (var key in keys)
+                    {
+                        key.Ids.Remove(data.Id);
+                        if (!key.Ids.Any())
+                        {
+                            index.Keys.Remove(key);
+                        }
+                    }
+                    if (FileStreamer.WriteDataToStream(indexFileName, index))
+                    {
+                        if (!FileStreamer.CloseStream(indexFileName))
+                        {
+                            unindexSuccess = false;
+                        }
+                    }
+                    else
+                    {
+                        unindexSuccess = false;
+                    }
+                }
+            }
+            return unindexSuccess;
         }
 
     }
