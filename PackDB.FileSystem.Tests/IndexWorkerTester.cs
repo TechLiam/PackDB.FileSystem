@@ -199,7 +199,7 @@ namespace PackDB.FileSystem.Tests
             }
         }
 
-        [Test(Author = "PackDB Creator", ExpectedResult = false)]
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
         public bool IndexDataTypeWithNoIndexedProperties()
         {
             return FileIndexWorker.Index(new BasicData());
@@ -337,7 +337,7 @@ namespace PackDB.FileSystem.Tests
             return result;
         }
 
-        [Test(Author = "PackDB Creator", ExpectedResult = false)]
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
         public bool UnindexDataTypeWithNoIndexedProperties()
         {
             return FileIndexWorker.Unindex(new BasicData());

@@ -120,6 +120,7 @@ namespace PackDB.FileSystem.DataWorker
                     finally
                     {
                         FileStreamer.UnlockFile(filename);
+                        FileStreamer.CloseStream(filename);
                     }
                 }
             }

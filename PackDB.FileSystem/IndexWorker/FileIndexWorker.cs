@@ -41,7 +41,7 @@ namespace PackDB.FileSystem.IndexWorker
                 .ToArray();
             if (!indexProperties.Any())
             {
-                return false;
+                return true;
             }
             var indexSuccess = true;
             foreach (var indexProperty in indexProperties)
@@ -128,7 +128,7 @@ namespace PackDB.FileSystem.IndexWorker
                 .ToArray();
             if (!indexProperties.Any())
             {
-                return false;
+                return true;
             }
             var unindexSuccess = true;
             foreach (var indexProperty in indexProperties)

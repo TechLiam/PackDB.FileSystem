@@ -8,12 +8,14 @@ namespace PackDB.FileSystem.OS
     {
         public IStream OpenWrite(string path)
         {
-            return (StreamProxy) File.OpenWrite(path);
+            var directory = path.Substring(0,path.LastIndexOf('\\'));
+            Directory.CreateDirectory(directory);
+            return new StreamProxy(File.OpenWrite(path));
         }
 
         public IStream OpenRead(string path)
         {
-            return (StreamProxy) File.OpenRead(path);
+            return new StreamProxy(File.OpenRead(path));
         }
 
         public bool Exists(string path)

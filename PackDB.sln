@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.FileSystem.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.Core.Tests", "PackDB.Core.Tests\PackDB.Core.Tests.csproj", "{EAF3A773-1B9A-40F9-B5CA-FF996E9C8559}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTestApp", "IntegrationTestApp\IntegrationTestApp.csproj", "{00190E07-EE9F-4813-8900-90693704450B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{EAF3A773-1B9A-40F9-B5CA-FF996E9C8559}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAF3A773-1B9A-40F9-B5CA-FF996E9C8559}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAF3A773-1B9A-40F9-B5CA-FF996E9C8559}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00190E07-EE9F-4813-8900-90693704450B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00190E07-EE9F-4813-8900-90693704450B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00190E07-EE9F-4813-8900-90693704450B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00190E07-EE9F-4813-8900-90693704450B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
