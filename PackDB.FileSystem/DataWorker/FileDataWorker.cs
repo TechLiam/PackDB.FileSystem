@@ -9,18 +9,25 @@ namespace PackDB.FileSystem.DataWorker
     public class FileDataWorker : IFileDataWorker
     {
         [ExcludeFromCodeCoverage]
-        public FileDataWorker()
+        public FileDataWorker() : this(new FileStreamer())
         {
-            FileStreamer = new FileStreamer();
         }
 
-        public FileDataWorker(IFileStreamer fileStreamer)
+        [ExcludeFromCodeCoverage]
+        public FileDataWorker(string dataFolder) : this(new FileStreamer(),dataFolder)
+        {
+        }
+
+        public FileDataWorker(IFileStreamer fileStreamer, string dataFolder = FileSystemConstants.DataFolder)
         {
             FileStreamer = fileStreamer;
+            TopLevelDataFolderName = dataFolder;
         }
 
         private IFileStreamer FileStreamer { get; }
 
+        private string TopLevelDataFolderName { get; }
+        
         public bool Write<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
             var filename = GetFileName<TDataType>(id);
@@ -138,12 +145,12 @@ namespace PackDB.FileSystem.DataWorker
             return files.Any() ? Math.Max(files.Max(int.Parse) + 1, 1) : 1;
         }
 
-        private static string GetFolderName<TDataType>()
+        private string GetFolderName<TDataType>()
         {
-            return typeof(TDataType).Name;
+            return $"{TopLevelDataFolderName}\\{typeof(TDataType).Name}";
         }
 
-        private static string GetFileName<TDataType>(int id)
+        private string GetFileName<TDataType>(int id)
         {
             return $"{GetFolderName<TDataType>()}\\{id}.data";
         }

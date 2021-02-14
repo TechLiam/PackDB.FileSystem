@@ -9,9 +9,9 @@ namespace PackDB.FileSystem
     public static class DataManagerFactory
     {
         [ExcludeFromCodeCoverage]
-        public static DataManager CreateFileSystemDataManager()
+        public static DataManager CreateFileSystemDataManager(string dataFolder = FileSystemConstants.DataFolder)
         {
-            return new DataManager(new FileDataWorker(), new FileIndexWorker(), new FileAuditWorker());
+            return new DataManager(new FileDataWorker(dataFolder), new FileIndexWorker(dataFolder), new FileAuditWorker(dataFolder));
         }
     }
 }

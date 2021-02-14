@@ -39,13 +39,13 @@ namespace PackDB.FileSystem.Tests
 
             MockFileStreamer = new Mock<IFileStreamer>();
             MockFileStreamer
-                .Setup(x => x.GetLockForFile("AuditableData\\" + ExpectedData.Id + ".audit"))
+                .Setup(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"))
                 .Returns(true);
             MockFileStreamer
-                .Setup(x => x.ReadDataFromStream<AuditLog>("AuditableData\\" + ExpectedData.Id + ".audit"))
+                .Setup(x => x.ReadDataFromStream<AuditLog>("Data\\AuditableData\\" + ExpectedData.Id + ".audit"))
                 .Returns(CreateExpectedAuditLog);
             MockFileStreamer
-                .Setup(x => x.CloseStream("AuditableData\\" + ExpectedData.Id + ".audit"))
+                .Setup(x => x.CloseStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit"))
                 .Returns(true);
             MockAuditGenerator = new Mock<IAuditGenerator>();
             MockAuditGenerator
@@ -82,10 +82,10 @@ namespace PackDB.FileSystem.Tests
             Expression<Func<IAuditGenerator, AuditLog>> auditGenerator, Times retryAttempts)
         {
             MockFileStreamer
-                .Setup(x => x.GetLockForFile("AuditableData\\" + ExpectedData.Id + ".audit"))
+                .Setup(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"))
                 .Returns(false);
             var result = methodUnderTest.Compile().Invoke();
-            MockFileStreamer.Verify(x => x.GetLockForFile("AuditableData\\" + ExpectedData.Id + ".audit"),
+            MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
                 retryAttempts);
             MockFileStreamer.Verify(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<AuditableData>()),
                 Times.Never);
@@ -99,12 +99,12 @@ namespace PackDB.FileSystem.Tests
             Times lockFile)
         {
             MockFileStreamer
-                .Setup(x => x.WriteDataToStream("AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog))
+                .Setup(x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog))
                 .Returns(false);
             var result = methodUnderTest.Compile().Invoke();
-            MockFileStreamer.Verify(x => x.GetLockForFile("AuditableData\\" + ExpectedData.Id + ".audit"), lockFile);
+            MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), lockFile);
             MockFileStreamer.Verify(
-                x => x.WriteDataToStream("AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog),
+                x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog),
                 retryAttempts);
             MockFileStreamer.Verify(x => x.UnlockFile(It.IsAny<string>()), lockFile);
             MockAuditGenerator.Verify(auditGenerator, retryAttempts);
@@ -116,12 +116,12 @@ namespace PackDB.FileSystem.Tests
             Times lockFile)
         {
             MockFileStreamer
-                .Setup(x => x.WriteDataToStream("AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog))
+                .Setup(x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog))
                 .Throws<Exception>();
             var result = methodUnderTest.Compile().Invoke();
-            MockFileStreamer.Verify(x => x.GetLockForFile("AuditableData\\" + ExpectedData.Id + ".audit"), lockFile);
+            MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), lockFile);
             MockFileStreamer.Verify(
-                x => x.WriteDataToStream("AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog),
+                x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog),
                 retryAttempts);
             MockFileStreamer.Verify(x => x.UnlockFile(It.IsAny<string>()), lockFile);
             MockAuditGenerator.Verify(auditGenerator, retryAttempts);
@@ -135,12 +135,12 @@ namespace PackDB.FileSystem.Tests
                 .Setup(auditGenerator)
                 .Throws<Exception>();
             var result = methodUnderTest.Compile().Invoke();
-            MockFileStreamer.Verify(x => x.GetLockForFile("AuditableData\\" + ExpectedData.Id + ".audit"),
+            MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
                 retryAttempts);
             MockFileStreamer.Verify(
-                x => x.WriteDataToStream("AuditableData\\" + ExpectedData.Id + ".audit", It.IsAny<AuditLog>()),
+                x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", It.IsAny<AuditLog>()),
                 Times.Never);
-            MockFileStreamer.Verify(x => x.UnlockFile("AuditableData\\" + ExpectedData.Id + ".audit"), retryAttempts);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), retryAttempts);
             MockAuditGenerator.Verify(auditGenerator, Times.Exactly(3));
             return result;
         }
@@ -150,13 +150,13 @@ namespace PackDB.FileSystem.Tests
             Times getFileLockTimes, Times unlockFile)
         {
             MockFileStreamer
-                .Setup(x => x.WriteDataToStream("AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog))
+                .Setup(x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog))
                 .Returns(true);
             var result = methodUnderTest.Compile().Invoke();
-            MockFileStreamer.Verify(x => x.GetLockForFile("AuditableData\\" + ExpectedData.Id + ".audit"),
+            MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
                 getFileLockTimes);
             MockFileStreamer.Verify(
-                x => x.WriteDataToStream("AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog), Times.Once);
+                x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog), Times.Once);
             MockFileStreamer.Verify(x => x.UnlockFile(It.IsAny<string>()), unlockFile);
             MockAuditGenerator.Verify(auditGenerator, Times.Once);
             return result;
@@ -359,8 +359,8 @@ namespace PackDB.FileSystem.Tests
         public void DiscardChanges()
         {
             FileAuditWorker.DiscardEvents(ExpectedData);
-            MockFileStreamer.Verify(x => x.DisposeOfStream("AuditableData\\" + ExpectedData.Id + ".audit"));
-            MockFileStreamer.Verify(x => x.UnlockFile("AuditableData\\" + ExpectedData.Id + ".audit"));
+            MockFileStreamer.Verify(x => x.DisposeOfStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit"));
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"));
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
@@ -370,8 +370,8 @@ namespace PackDB.FileSystem.Tests
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
                 .Returns(false);
             var result = FileAuditWorker.CommitEvents(ExpectedData);
-            MockFileStreamer.Verify(x => x.DisposeOfStream("AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
-            MockFileStreamer.Verify(x => x.UnlockFile("AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
+            MockFileStreamer.Verify(x => x.DisposeOfStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
             return result;
         }
 
@@ -382,8 +382,8 @@ namespace PackDB.FileSystem.Tests
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
                 .Throws<Exception>();
             var result = FileAuditWorker.CommitEvents(ExpectedData);
-            MockFileStreamer.Verify(x => x.DisposeOfStream("AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
-            MockFileStreamer.Verify(x => x.UnlockFile("AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
+            MockFileStreamer.Verify(x => x.DisposeOfStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
             return result;
         }
 
@@ -392,7 +392,7 @@ namespace PackDB.FileSystem.Tests
         {
             var result = FileAuditWorker.CommitEvents(ExpectedData);
             MockFileStreamer.Verify(x => x.DisposeOfStream(It.IsAny<string>()), Times.Never);
-            MockFileStreamer.Verify(x => x.UnlockFile("AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
             return result;
         }
 

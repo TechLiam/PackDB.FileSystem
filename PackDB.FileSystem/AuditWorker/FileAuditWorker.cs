@@ -9,20 +9,45 @@ namespace PackDB.FileSystem.AuditWorker
     public class FileAuditWorker : IFileAuditWorker
     {
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker()
+        public FileAuditWorker() : this(new FileStreamer())
         {
-            FileStreamer = new FileStreamer();
-            AuditGenerator = new AuditGenerator();
         }
 
-        public FileAuditWorker(IFileStreamer fileStreamer, IAuditGenerator auditGenerator)
+        [ExcludeFromCodeCoverage]
+        public FileAuditWorker(IFileStreamer fileStreamer) : this(fileStreamer,new AuditGenerator())
+        {
+        }
+
+        [ExcludeFromCodeCoverage]
+        public FileAuditWorker(IAuditGenerator auditGenerator) : this(new FileStreamer(),auditGenerator)
+        {
+        }
+
+        [ExcludeFromCodeCoverage]
+        public FileAuditWorker(string dataFolder) : this(new FileStreamer(),new AuditGenerator(), dataFolder)
+        {
+        }
+
+        [ExcludeFromCodeCoverage]
+        public FileAuditWorker(IFileStreamer fileStreamer, string dataFolder) : this(fileStreamer, new AuditGenerator(), dataFolder)
+        {
+        }
+        
+        [ExcludeFromCodeCoverage]
+        public FileAuditWorker(IAuditGenerator auditGenerator, string dataFolder) : this(new FileStreamer(), auditGenerator, dataFolder)
+        {
+        }
+
+        public FileAuditWorker(IFileStreamer fileStreamer, IAuditGenerator auditGenerator, string dataFolder = FileSystemConstants.DataFolder)
         {
             FileStreamer = fileStreamer;
             AuditGenerator = auditGenerator;
+            TopLevelDataFolderName = dataFolder;
         }
 
         private IFileStreamer FileStreamer { get; }
         private IAuditGenerator AuditGenerator { get; }
+        private string TopLevelDataFolderName { get; }
 
         public bool CreationEvent<TDataType>(TDataType data) where TDataType : DataEntity
         {
@@ -116,9 +141,9 @@ namespace PackDB.FileSystem.AuditWorker
             return null;
         }
 
-        private static string GetFileName<TDataType>(int id)
+        private string GetFileName<TDataType>(int id)
         {
-            return $"{typeof(TDataType).Name}\\{id}.audit";
+            return $"{TopLevelDataFolderName}\\{typeof(TDataType).Name}\\{id}.audit";
         }
 
         [ExcludeFromCodeCoverage]

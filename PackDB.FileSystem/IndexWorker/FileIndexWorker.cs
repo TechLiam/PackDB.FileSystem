@@ -10,17 +10,24 @@ namespace PackDB.FileSystem.IndexWorker
     public class FileIndexWorker : IFileIndexWorker
     {
         [ExcludeFromCodeCoverage]
-        public FileIndexWorker()
+        public FileIndexWorker() : this(new FileStreamer())
         {
-            FileStreamer = new FileStreamer();
         }
 
-        public FileIndexWorker(IFileStreamer fileStreamer)
+        [ExcludeFromCodeCoverage]
+        public FileIndexWorker(string dataPath) : this(new FileStreamer(),dataPath)
+        {
+        }
+
+        public FileIndexWorker(IFileStreamer fileStreamer, string dataFolder = FileSystemConstants.DataFolder)
         {
             FileStreamer = fileStreamer;
+            TopLevelDataFolderName = dataFolder;
         }
 
         private IFileStreamer FileStreamer { get; }
+
+        private string TopLevelDataFolderName { get; }
 
         public bool IndexExist<TDataType>(string indexName) where TDataType : DataEntity
         {
@@ -160,9 +167,9 @@ namespace PackDB.FileSystem.IndexWorker
             return unindexSuccess;
         }
 
-        private static string GetFileName<TDataType>(string indexName)
+        private string GetFileName<TDataType>(string indexName)
         {
-            return $"{typeof(TDataType).Name}\\{indexName}.index";
+            return $"{TopLevelDataFolderName}\\{typeof(TDataType).Name}\\{indexName}.index";
         }
     }
 }
