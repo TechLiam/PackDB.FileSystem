@@ -10,24 +10,20 @@ namespace PackDB.Core
 {
     public class DataManager : IDataManager
     {
-        
-        private IDataWorker DataStreamer { get; }
-        private IIndexWorker IndexWorker { get; }
-        private IAuditWorker AuditWorker { get; }
-
         public DataManager(IDataWorker dataStreamer, IIndexWorker indexWorker, IAuditWorker auditWorker)
         {
             DataStreamer = dataStreamer;
             IndexWorker = indexWorker;
             AuditWorker = auditWorker;
         }
-        
+
+        private IDataWorker DataStreamer { get; }
+        private IIndexWorker IndexWorker { get; }
+        private IAuditWorker AuditWorker { get; }
+
         public TDataType Read<TDataType>(int id) where TDataType : DataEntity
         {
-            if (DataStreamer.Exists<TDataType>(id))
-            {
-                return DataStreamer.Read<TDataType>(id);
-            }
+            if (DataStreamer.Exists<TDataType>(id)) return DataStreamer.Read<TDataType>(id);
             return null;
         }
 
@@ -36,17 +32,17 @@ namespace PackDB.Core
             return ids.Select(Read<TDataType>);
         }
 
-        public IEnumerable<TDataType> ReadIndex<TDataType, TKeyType>(TKeyType key, Expression<Func<TDataType,string>> indexProperty) where TDataType : DataEntity
+        public IEnumerable<TDataType> ReadIndex<TDataType, TKeyType>(TKeyType key,
+            Expression<Func<TDataType, string>> indexProperty) where TDataType : DataEntity
         {
             var indexMember = ((MemberExpression) indexProperty.Body).Member;
             if (indexMember.IsDefined(typeof(IndexAttribute), true))
             {
                 var indexName = indexMember.Name;
                 if (IndexWorker.IndexExist<TDataType>(indexName))
-                {
-                    return Read<TDataType>(IndexWorker.GetIdsFromIndex<TDataType,TKeyType>(indexName, key));
-                }
+                    return Read<TDataType>(IndexWorker.GetIdsFromIndex<TDataType, TKeyType>(indexName, key));
             }
+
             return null;
         }
 
@@ -70,42 +66,42 @@ namespace PackDB.Core
                             if (committedAudit)
                             {
                                 var indexed = IndexWorker.Index(data);
-                                if (indexed)
-                                {
-                                    return true;
-                                }
+                                if (indexed) return true;
                                 AuditWorker.RollbackEvent(data);
                             }
+
                             DataStreamer.Rollback(data.Id, currentData);
                             return false;
                         }
+
                         AuditWorker.DiscardEvents(data);
                         return false;
                     }
+
                     DataStreamer.DiscardChanges<TDataType>(data.Id);
                 }
+
                 return false;
             }
+
             var writeAndCommit = DataStreamer.WriteAndCommit(data.Id, data);
             if (writeAndCommit)
             {
                 var indexed = IndexWorker.Index(data);
                 if (!indexed)
                 {
-                    DataStreamer.Rollback(data.Id,currentData);
+                    DataStreamer.Rollback(data.Id, currentData);
                     return false;
                 }
             }
+
             return writeAndCommit;
         }
 
         public bool Delete<TDataType>(int id) where TDataType : DataEntity
         {
             var data = Read<TDataType>(id);
-            if (data is null)
-            {
-                return false;
-            }
+            if (data is null) return false;
 
             if (typeof(TDataType).IsDefined(typeof(AuditAttribute), true))
             {
@@ -115,10 +111,7 @@ namespace PackDB.Core
                     {
                         if (AuditWorker.CommitEvents(data))
                         {
-                            if (IndexWorker.Unindex(data))
-                            {
-                                return true;
-                            }
+                            if (IndexWorker.Unindex(data)) return true;
 
                             AuditWorker.RollbackEvent(data);
                         }
@@ -135,12 +128,8 @@ namespace PackDB.Core
             }
 
             if (DataStreamer.Delete<TDataType>(id))
-            {
                 if (IndexWorker.Unindex(data))
-                {
                     return true;
-                }
-            }
 
             return false;
         }
@@ -159,10 +148,7 @@ namespace PackDB.Core
                         {
                             if (AuditWorker.CommitEvents(data))
                             {
-                                if (IndexWorker.Index(data))
-                                {
-                                    return true;
-                                }
+                                if (IndexWorker.Index(data)) return true;
 
                                 AuditWorker.RollbackEvent(data);
                             }
@@ -174,16 +160,21 @@ namespace PackDB.Core
                     }
                     else
                     {
-                        if (IndexWorker.Index(data))
-                        {
-                            return true;
-                        }
+                        if (IndexWorker.Index(data)) return true;
                     }
+
                     DataStreamer.Delete<TDataType>(id);
                 }
+
                 return false;
             }
+
             return true;
+        }
+
+        public int GetNextId<TDataType>() where TDataType : DataEntity
+        {
+            return DataStreamer.NextId<TDataType>();
         }
     }
 }

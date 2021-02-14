@@ -5,7 +5,6 @@ namespace PackDB.Core.Tests
     [ExcludeFromCodeCoverage]
     public class IndexedEntity : BasicEntity
     {
-        [Index]
-        public string IndexedValue { get; set; }
+        [Index] public string IndexedValue { get; set; }
     }
 }

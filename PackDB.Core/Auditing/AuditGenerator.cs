@@ -10,26 +10,29 @@ namespace PackDB.Core.Auditing
         public AuditLog NewLog<TDataType>(TDataType data) where TDataType : DataEntity
         {
             var properties = typeof(TDataType).GetProperties();
-            return new AuditLog()
+            return new AuditLog
             {
-                Entries = new List<AuditEntry>()
+                Entries = new List<AuditEntry>
                 {
-                    new AuditEntry()
+                    new AuditEntry
                     {
                         Type = AuditType.Create,
-                        Changes = properties.Select(x => new AuditProperty(x.Name, null, x.GetValue(data))).ToImmutableArray()
+                        Changes = properties.Select(x => new AuditProperty(x.Name, null, x.GetValue(data)))
+                            .ToImmutableArray()
                     }
                 }
             };
         }
 
-        public AuditLog UpdateLog<TDataType, TOldDataType>(TDataType newData, TOldDataType oldData, AuditLog currentLog) where TDataType : DataEntity
+        public AuditLog UpdateLog<TDataType, TOldDataType>(TDataType newData, TOldDataType oldData, AuditLog currentLog)
+            where TDataType : DataEntity
         {
             var properties = typeof(TDataType).GetProperties();
-            currentLog.Entries.Add(new AuditEntry()
+            currentLog.Entries.Add(new AuditEntry
             {
                 Type = AuditType.Update,
-                Changes = properties.Select(x => new AuditProperty(x.Name, x.GetValue(oldData), x.GetValue(newData))).ToImmutableArray()
+                Changes = properties.Select(x => new AuditProperty(x.Name, x.GetValue(oldData), x.GetValue(newData)))
+                    .ToImmutableArray()
             });
             return currentLog;
         }
@@ -37,7 +40,7 @@ namespace PackDB.Core.Auditing
         public AuditLog DeleteLog<TDataType>(TDataType data, AuditLog currentLog) where TDataType : DataEntity
         {
             var properties = typeof(TDataType).GetProperties();
-            currentLog.Entries.Add(new AuditEntry()
+            currentLog.Entries.Add(new AuditEntry
             {
                 Type = AuditType.Delete,
                 Changes = properties.Select(x => new AuditProperty(x.Name, x.GetValue(data), null)).ToImmutableArray()
@@ -48,7 +51,7 @@ namespace PackDB.Core.Auditing
         public AuditLog UndeleteLog<TDataType>(TDataType data, AuditLog currentLog) where TDataType : DataEntity
         {
             var properties = typeof(TDataType).GetProperties();
-            currentLog.Entries.Add(new AuditEntry()
+            currentLog.Entries.Add(new AuditEntry
             {
                 Type = AuditType.Undelete,
                 Changes = properties.Select(x => new AuditProperty(x.Name, null, x.GetValue(data))).ToImmutableArray()
@@ -59,7 +62,7 @@ namespace PackDB.Core.Auditing
         public AuditLog RollbackLog<TDataType>(TDataType data, AuditLog currentLog) where TDataType : DataEntity
         {
             var properties = typeof(TDataType).GetProperties();
-            currentLog.Entries.Add(new AuditEntry()
+            currentLog.Entries.Add(new AuditEntry
             {
                 Type = AuditType.Rollback,
                 Changes = properties.Select(x => new AuditProperty(x.Name, null, x.GetValue(data))).ToImmutableArray()

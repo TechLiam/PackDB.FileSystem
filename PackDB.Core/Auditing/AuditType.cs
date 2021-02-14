@@ -7,6 +7,6 @@
         Update = 2,
         Delete = 3,
         Undelete = 4,
-        Rollback = 5,
+        Rollback = 5
     }
 }

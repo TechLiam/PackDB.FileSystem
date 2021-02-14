@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using PackDB.Core.Auditing;
 
-namespace PackDB.Core.Tests
+namespace IntegrationTestApp
 {
-    [Audit]
     [ExcludeFromCodeCoverage]
-    public class AuditedEntity : BasicEntity
+    [Audit]
+    public class TestAuditData : TestData
     {
     }
 }

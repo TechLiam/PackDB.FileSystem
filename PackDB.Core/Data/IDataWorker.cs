@@ -11,5 +11,6 @@
         bool Delete<TDataType>(int id) where TDataType : DataEntity;
         bool Undelete<TDataType>(int id) where TDataType : DataEntity;
         void Rollback<TDataType>(int id, TDataType data) where TDataType : DataEntity;
+        int NextId<TDataType>() where TDataType : DataEntity;
     }
 }

@@ -1,8 +1,4 @@
-﻿using System.IO;
-using System.Threading;
-using PackDB.Core.Data;
-
-namespace PackDB.FileSystem
+﻿namespace PackDB.FileSystem
 {
     public interface IFileStreamer
     {
@@ -16,5 +12,6 @@ namespace PackDB.FileSystem
         bool Delete(string filename);
         bool SoftDelete(string filename);
         bool Undelete(string filename);
+        string[] GetAllFileNames(string folder, string fileExtension);
     }
 }

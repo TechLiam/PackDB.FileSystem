@@ -5,6 +5,5 @@ namespace PackDB.FileSystem.Tests
     [SoftDelete]
     public class SoftDeleteData : BasicData
     {
-        
     }
 }

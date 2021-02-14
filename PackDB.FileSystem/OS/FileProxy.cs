@@ -8,7 +8,7 @@ namespace PackDB.FileSystem.OS
     {
         public IStream OpenWrite(string path)
         {
-            var directory = path.Substring(0,path.LastIndexOf('\\'));
+            var directory = path.Substring(0, path.LastIndexOf('\\'));
             Directory.CreateDirectory(directory);
             return new StreamProxy(File.OpenWrite(path));
         }
@@ -30,7 +30,7 @@ namespace PackDB.FileSystem.OS
 
         public void Move(string path, string destination)
         {
-            File.Move(path,destination);
+            File.Move(path, destination);
         }
     }
 }

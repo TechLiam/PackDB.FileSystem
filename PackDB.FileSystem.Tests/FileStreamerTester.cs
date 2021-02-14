@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -10,23 +12,11 @@ using PackDB.FileSystem.OS;
 
 namespace PackDB.FileSystem.Tests
 {
-    
-    [TestFixture,TestOf(typeof(FileStreamer)),ExcludeFromCodeCoverage]
+    [TestFixture]
+    [TestOf(typeof(FileStreamer))]
+    [ExcludeFromCodeCoverage]
     public class FileStreamerTester
     {
-        
-        private FileStreamer FileStreamer { get; set; }
-        private string Filename { get; set; }
-        private BasicData Data { get; set; }
-        private Stream WriteStream { get; set; }
-        private Stream ReadStream { get; set; }
-        private Mock<IStream> MockWriteStream { get; set; }
-        private Mock<IStream> MockReadStream { get; set; }
-        private Mock<IMessagePackSerializer> MockMessagePackSerializer { get; set; }
-        private Mock<IFile> MockFile { get; set; }
-        private Mock<ISemaphoreFactory> MockSemaphoreFactory { get; set; }
-        private Mock<ISemaphore> MockSemaphore { get; set; }
-        
         [SetUp]
         public void Setup()
         {
@@ -34,7 +24,7 @@ namespace PackDB.FileSystem.Tests
             Data = new BasicData();
             WriteStream = new MemoryStream();
             ReadStream = new MemoryStream();
-            
+
             MockWriteStream = new Mock<IStream>();
             MockWriteStream
                 .Setup(x => x.GetStream())
@@ -43,12 +33,12 @@ namespace PackDB.FileSystem.Tests
             MockReadStream
                 .Setup(x => x.GetStream())
                 .Returns(ReadStream);
-            
+
             MockMessagePackSerializer = new Mock<IMessagePackSerializer>();
             MockMessagePackSerializer
                 .Setup(x => x.Deserialize<BasicData>(ReadStream))
                 .Returns(Data);
-            
+
             MockFile = new Mock<IFile>();
             MockFile
                 .Setup(x => x.OpenWrite(Filename))
@@ -64,14 +54,30 @@ namespace PackDB.FileSystem.Tests
             MockSemaphore
                 .Setup(x => x.Wait(It.Is<TimeSpan>(y => Math.Abs(y.TotalMinutes - 1.0) < 1)))
                 .Returns(true);
-            
+
             MockSemaphoreFactory = new Mock<ISemaphoreFactory>();
             MockSemaphoreFactory
                 .Setup(x => x.Create(1, 1))
                 .Returns(MockSemaphore.Object);
-            
-            FileStreamer = new FileStreamer(MockMessagePackSerializer.Object,MockFile.Object, MockSemaphoreFactory.Object);
+
+            MockDirectory = new Mock<IDirectory>();
+
+            FileStreamer = new FileStreamer(MockMessagePackSerializer.Object, MockFile.Object,
+                MockSemaphoreFactory.Object, MockDirectory.Object);
         }
+
+        private FileStreamer FileStreamer { get; set; }
+        private string Filename { get; set; }
+        private BasicData Data { get; set; }
+        private Stream WriteStream { get; set; }
+        private Stream ReadStream { get; set; }
+        private Mock<IStream> MockWriteStream { get; set; }
+        private Mock<IStream> MockReadStream { get; set; }
+        private Mock<IMessagePackSerializer> MockMessagePackSerializer { get; set; }
+        private Mock<IFile> MockFile { get; set; }
+        private Mock<IDirectory> MockDirectory { get; set; }
+        private Mock<ISemaphoreFactory> MockSemaphoreFactory { get; set; }
+        private Mock<ISemaphore> MockSemaphore { get; set; }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public bool GetLockForFileWaitFails()
@@ -80,7 +86,7 @@ namespace PackDB.FileSystem.Tests
                 .Setup(x => x.Wait(It.Is<TimeSpan>(y => Math.Abs(y.TotalMinutes - 1) < 1)))
                 .Returns(false);
             var result = FileStreamer.GetLockForFile(Filename);
-            MockSemaphoreFactory.Verify(x => x.Create(1,1), Times.Once);
+            MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
             return result;
         }
 
@@ -88,7 +94,7 @@ namespace PackDB.FileSystem.Tests
         public bool GetLockForFileWaitSuccess()
         {
             var result = FileStreamer.GetLockForFile(Filename);
-            MockSemaphoreFactory.Verify(x => x.Create(1,1), Times.Once);
+            MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
             return result;
         }
 
@@ -97,15 +103,15 @@ namespace PackDB.FileSystem.Tests
         {
             FileStreamer.GetLockForFile(Filename);
             var result = FileStreamer.GetLockForFile(Filename);
-            MockSemaphoreFactory.Verify(x => x.Create(1,1), Times.Once);
+            MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void UnlockFileWhenThereIsNoLock()
         {
             FileStreamer.UnlockFile(Filename);
-            MockSemaphoreFactory.Verify(x => x.Create(1,1), Times.Never);
+            MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Never);
             MockSemaphore.Verify(x => x.Release(), Times.Never);
         }
 
@@ -114,7 +120,7 @@ namespace PackDB.FileSystem.Tests
         {
             FileStreamer.GetLockForFile(Filename);
             FileStreamer.UnlockFile(Filename);
-            MockSemaphoreFactory.Verify(x => x.Create(1,1), Times.Once);
+            MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
             MockSemaphore.Verify(x => x.Release(), Times.Once);
         }
 
@@ -124,7 +130,7 @@ namespace PackDB.FileSystem.Tests
             FileStreamer.GetLockForFile(Filename);
             FileStreamer.UnlockFile(Filename);
             FileStreamer.UnlockFile(Filename);
-            MockSemaphoreFactory.Verify(x => x.Create(1,1), Times.Once);
+            MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
             MockSemaphore.Verify(x => x.Release(), Times.Exactly(2));
         }
 
@@ -136,7 +142,7 @@ namespace PackDB.FileSystem.Tests
             MockMessagePackSerializer.Verify(x => x.Serialize(WriteStream, Data), Times.Once);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
         public bool WriteDataToStreamMultipleTimes()
         {
@@ -150,18 +156,18 @@ namespace PackDB.FileSystem.Tests
         [Test(Author = "PackDB Creator")]
         public void ReadDataFromStreamNewStreamNeeded()
         {
-            Assert.AreSame(Data,FileStreamer.ReadDataFromStream<BasicData>(Filename));
+            Assert.AreSame(Data, FileStreamer.ReadDataFromStream<BasicData>(Filename));
             MockFile.Verify(x => x.OpenRead(Filename), Times.Once);
             MockReadStream.Verify(x => x.Close(), Times.Once);
             MockReadStream.Verify(x => x.Dispose(), Times.Once);
             MockMessagePackSerializer.Verify(x => x.Deserialize<BasicData>(ReadStream), Times.Once);
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void ReadDataFromStreamMultipleTimes()
         {
             FileStreamer.ReadDataFromStream<BasicData>(Filename);
-            Assert.AreSame(Data,FileStreamer.ReadDataFromStream<BasicData>(Filename));
+            Assert.AreSame(Data, FileStreamer.ReadDataFromStream<BasicData>(Filename));
             MockFile.Verify(x => x.OpenRead(Filename), Times.Exactly(2));
             MockMessagePackSerializer.Verify(x => x.Deserialize<BasicData>(ReadStream), Times.Exactly(2));
         }
@@ -176,7 +182,7 @@ namespace PackDB.FileSystem.Tests
                 .Verify(x => x.Close(), Times.Never);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
         public bool CloseStreamWhenThereIsAWriteStream()
         {
@@ -240,7 +246,7 @@ namespace PackDB.FileSystem.Tests
             MockReadStream
                 .Verify(x => x.Dispose(), Times.Never);
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void DisposeOfStreamWhenThereIsAWriteStream()
         {
@@ -324,19 +330,47 @@ namespace PackDB.FileSystem.Tests
             FileStreamer.Delete(Filename);
             MockFile.Verify(x => x.Delete(Filename), Times.Once);
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void SoftDelete()
         {
             FileStreamer.SoftDelete(Filename);
-            MockFile.Verify(x => x.Move(Filename,Filename + ".deleted"), Times.Once);
+            MockFile.Verify(x => x.Move(Filename, Filename + ".deleted"), Times.Once);
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void Undelete()
         {
             FileStreamer.Undelete(Filename);
             MockFile.Verify(x => x.Move(Filename + ".deleted", Filename), Times.Once);
+        }
+
+        [Test(Author = "PackDB Creator")]
+        public void GetAllFileNamesWhenThereNoFiles()
+        {
+            var results = FileStreamer.GetAllFileNames("Test", "Test");
+            Assert.IsNotNull(results);
+            Assert.IsEmpty(results);
+        }
+
+        [Test(Author = "PackDB Creator")]
+        public void GetAllFileNamesWhenAreFiles()
+        {
+            MockDirectory
+                .Setup(x => x.GetFiles("Test", "Test"))
+                .Returns(new List<string>
+                {
+                    "Test1",
+                    "Test\\Test2",
+                    "Test\\Test3.Test"
+                }.ToArray());
+            var results = FileStreamer.GetAllFileNames("Test", "Test");
+            Assert.IsNotNull(results);
+            Assert.IsNotEmpty(results);
+            Assert.AreEqual(3, results.Count());
+            Assert.AreEqual("Test1", results[0]);
+            Assert.AreEqual("Test2", results[1]);
+            Assert.AreEqual("Test3", results[2]);
         }
     }
 }

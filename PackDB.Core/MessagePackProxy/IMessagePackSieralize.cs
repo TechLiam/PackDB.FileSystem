@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using PackDB.Core.Data;
 
 namespace PackDB.Core.MessagePackProxy
 {

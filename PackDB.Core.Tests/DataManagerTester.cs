@@ -10,27 +10,19 @@ using PackDB.Core.Indexing;
 
 namespace PackDB.Core.Tests
 {
-    [TestFixture,TestOf(typeof(DataManager)),ExcludeFromCodeCoverage]
+    [TestFixture]
+    [TestOf(typeof(DataManager))]
+    [ExcludeFromCodeCoverage]
     public class DataManagerTester
     {
-        
-        private DataManager DataManager { get; set; }
-        private static BasicEntity ExpectedBasicEntity { get; set; }
-        private static IndexedEntity ExpectedIndexedEntity { get; set; }
-        private static AuditedEntity ExpectedAuditedEntity { get; set; }
-        private Randomizer Randomizer { get; set; }
-        private Mock<IDataWorker> MockDataStream { get; set; }
-        private Mock<IIndexWorker> MockIndexer { get; set; }
-        private Mock<IAuditWorker> MockAudit { get; set; }
-
         [SetUp]
         public void Setup()
         {
             Randomizer = Randomizer.CreateRandomizer();
 
-            ExpectedBasicEntity = new BasicEntity { Id = Randomizer.Next() };
-            ExpectedIndexedEntity = new IndexedEntity { Id = Randomizer.Next(), IndexedValue = Randomizer.GetString() };
-            ExpectedAuditedEntity = new AuditedEntity { Id = Randomizer.Next() };
+            ExpectedBasicEntity = new BasicEntity {Id = Randomizer.Next()};
+            ExpectedIndexedEntity = new IndexedEntity {Id = Randomizer.Next(), IndexedValue = Randomizer.GetString()};
+            ExpectedAuditedEntity = new AuditedEntity {Id = Randomizer.Next()};
 
             MockDataStream = new Mock<IDataWorker>();
             MockDataStream
@@ -69,14 +61,19 @@ namespace PackDB.Core.Tests
             MockDataStream
                 .Setup(x => x.Delete<AuditedEntity>(ExpectedAuditedEntity.Id))
                 .Returns(true);
+            ExpectedNextBasicEntityId = Randomizer.Next();
+            MockDataStream
+                .Setup(x => x.NextId<BasicEntity>())
+                .Returns(ExpectedNextBasicEntityId);
 
             MockIndexer = new Mock<IIndexWorker>();
             MockIndexer
                 .Setup(x => x.IndexExist<IndexedEntity>("IndexedValue"))
                 .Returns(true);
             MockIndexer
-                .Setup(x => x.GetIdsFromIndex<IndexedEntity,string>("IndexedValue",ExpectedIndexedEntity.IndexedValue))
-                .Returns(new List<int>(){ExpectedIndexedEntity.Id});
+                .Setup(
+                    x => x.GetIdsFromIndex<IndexedEntity, string>("IndexedValue", ExpectedIndexedEntity.IndexedValue))
+                .Returns(new List<int> {ExpectedIndexedEntity.Id});
             MockIndexer
                 .Setup(x => x.Index(ExpectedBasicEntity))
                 .Returns(true);
@@ -106,76 +103,94 @@ namespace PackDB.Core.Tests
             MockAudit
                 .Setup(x => x.CommitEvents(ExpectedAuditedEntity))
                 .Returns(true);
-            
-            DataManager = new DataManager(MockDataStream.Object,MockIndexer.Object,MockAudit.Object);
-            
+
+            DataManager = new DataManager(MockDataStream.Object, MockIndexer.Object, MockAudit.Object);
         }
+
+        private DataManager DataManager { get; set; }
+        private static BasicEntity ExpectedBasicEntity { get; set; }
+        private static IndexedEntity ExpectedIndexedEntity { get; set; }
+        private static AuditedEntity ExpectedAuditedEntity { get; set; }
+        private static int ExpectedNextBasicEntityId { get; set; }
+        private Randomizer Randomizer { get; set; }
+        private Mock<IDataWorker> MockDataStream { get; set; }
+        private Mock<IIndexWorker> MockIndexer { get; set; }
+        private Mock<IAuditWorker> MockAudit { get; set; }
 
         [Test(Author = "PackDB Creator")]
         public void ReadWhenThereNoData()
         {
             Assert.IsNull(DataManager.Read<BasicEntity>(Randomizer.Next()));
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void ReadWhenThereIsData()
         {
-            Assert.AreSame(ExpectedBasicEntity,DataManager.Read<BasicEntity>(ExpectedBasicEntity.Id));
+            Assert.AreSame(ExpectedBasicEntity, DataManager.Read<BasicEntity>(ExpectedBasicEntity.Id));
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void ReadMultipleWhenThereNoData()
         {
-            Assert.IsFalse(DataManager.Read<BasicEntity>(new []{Randomizer.Next(), Randomizer.Next()}).Any(y => y != null));
+            Assert.IsFalse(DataManager.Read<BasicEntity>(new[] {Randomizer.Next(), Randomizer.Next()})
+                .Any(y => y != null));
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void ReadMultipleWhenThereIsData()
         {
-            var results = DataManager.Read<BasicEntity>(new[] {ExpectedBasicEntity.Id, ExpectedIndexedEntity.Id}).ToArray();
-            Assert.AreEqual(2,results.Count());
-            Assert.AreSame(ExpectedBasicEntity,results.ElementAt(0));
-            Assert.AreSame(ExpectedIndexedEntity,results.ElementAt(1));
+            var results = DataManager.Read<BasicEntity>(new[] {ExpectedBasicEntity.Id, ExpectedIndexedEntity.Id})
+                .ToArray();
+            Assert.AreEqual(2, results.Count());
+            Assert.AreSame(ExpectedBasicEntity, results.ElementAt(0));
+            Assert.AreSame(ExpectedIndexedEntity, results.ElementAt(1));
         }
 
         [Test(Author = "PackDB Creator")]
         public void ReadWhenIndexPropertyIsNotIndexed()
         {
-            Assert.IsNull(DataManager.ReadIndex<BasicEntity,string>(ExpectedBasicEntity.Value1,x => x.Value1));
-            MockIndexer.Verify(x => x.IndexExist<BasicEntity>(It.IsAny<string>()),Times.Never);
+            Assert.IsNull(DataManager.ReadIndex<BasicEntity, string>(ExpectedBasicEntity.Value1, x => x.Value1));
+            MockIndexer.Verify(x => x.IndexExist<BasicEntity>(It.IsAny<string>()), Times.Never);
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void ReadWhenIndexDoesNotExist()
         {
             MockIndexer.Setup(x => x.IndexExist<IndexedEntity>("IndexedValue")).Returns(false);
-            Assert.IsNull(DataManager.ReadIndex<IndexedEntity,string>(ExpectedBasicEntity.Value1,x => x.IndexedValue));
+            Assert.IsNull(
+                DataManager.ReadIndex<IndexedEntity, string>(ExpectedBasicEntity.Value1, x => x.IndexedValue));
         }
-        
+
         [Test(Author = "PackDB Creator")]
         public void ReadWhenIndexHasNoValue()
         {
             MockIndexer
-                .Setup(x => x.GetIdsFromIndex<IndexedEntity,string>("IndexedValue",ExpectedIndexedEntity.IndexedValue))
+                .Setup(
+                    x => x.GetIdsFromIndex<IndexedEntity, string>("IndexedValue", ExpectedIndexedEntity.IndexedValue))
                 .Returns(new List<int>());
-            Assert.IsFalse(DataManager.ReadIndex<IndexedEntity,string>(ExpectedIndexedEntity.IndexedValue,x => x.IndexedValue).Any());
+            Assert.IsFalse(DataManager
+                .ReadIndex<IndexedEntity, string>(ExpectedIndexedEntity.IndexedValue, x => x.IndexedValue).Any());
         }
 
         [Test(Author = "PackDB Creator")]
         public void ReadWhenIndexHasAValueButThereNoData()
         {
             MockIndexer
-                .Setup(x => x.GetIdsFromIndex<IndexedEntity,string>("IndexedValue",ExpectedIndexedEntity.IndexedValue))
-                .Returns(new List<int>(){Randomizer.Next()});
-            Assert.IsFalse(DataManager.ReadIndex<IndexedEntity,string>(ExpectedIndexedEntity.IndexedValue,x => x.IndexedValue).Any(x => x != null));
+                .Setup(
+                    x => x.GetIdsFromIndex<IndexedEntity, string>("IndexedValue", ExpectedIndexedEntity.IndexedValue))
+                .Returns(new List<int> {Randomizer.Next()});
+            Assert.IsFalse(DataManager
+                .ReadIndex<IndexedEntity, string>(ExpectedIndexedEntity.IndexedValue, x => x.IndexedValue)
+                .Any(x => x != null));
         }
 
         [Test(Author = "PackDB Creator")]
         public void ReadWhenIndexHasAValueAndThereIsData()
         {
-            var result = DataManager.ReadIndex<IndexedEntity,string>(ExpectedIndexedEntity.IndexedValue,x => x.IndexedValue).ToArray();
-            Assert.AreEqual(result.Count(),1);
-            Assert.AreSame(ExpectedIndexedEntity,result.ElementAt(0));
+            var result = DataManager
+                .ReadIndex<IndexedEntity, string>(ExpectedIndexedEntity.IndexedValue, x => x.IndexedValue).ToArray();
+            Assert.AreEqual(result.Count(), 1);
+            Assert.AreSame(ExpectedIndexedEntity, result.ElementAt(0));
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
@@ -197,7 +212,7 @@ namespace PackDB.Core.Tests
                 .Verify(x => x.CommitEvents(It.IsAny<DataEntity>()), Times.Never);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public bool WriteDataWithNoAuditIndexingFails()
         {
@@ -227,7 +242,7 @@ namespace PackDB.Core.Tests
                 .Returns(false);
             var result = DataManager.Write(ExpectedIndexedEntity);
             MockDataStream
-                .Verify(x => x.Rollback(ExpectedIndexedEntity.Id, (DataEntity)null));
+                .Verify(x => x.Rollback(ExpectedIndexedEntity.Id, (DataEntity) null));
             MockAudit
                 .Verify(x => x.CreationEvent(It.IsAny<DataEntity>()), Times.Never);
             MockAudit
@@ -236,7 +251,7 @@ namespace PackDB.Core.Tests
                 .Verify(x => x.CommitEvents(It.IsAny<DataEntity>()), Times.Never);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
         public bool WriteDataWithNoAuditOrIndexSuccess()
         {
@@ -266,7 +281,7 @@ namespace PackDB.Core.Tests
                 .Verify(x => x.CommitEvents(It.IsAny<DataEntity>()), Times.Never);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public bool WriteDataWithAuditWriteFails()
         {
@@ -390,7 +405,7 @@ namespace PackDB.Core.Tests
                 .Returns(false);
             var result = DataManager.Write(ExpectedAuditedEntity);
             MockDataStream
-                .Verify(x => x.Rollback(ExpectedAuditedEntity.Id, (DataEntity)null), Times.Once);
+                .Verify(x => x.Rollback(ExpectedAuditedEntity.Id, (DataEntity) null), Times.Once);
             MockIndexer
                 .Verify(x => x.Index(It.IsAny<DataEntity>()), Times.Never);
             MockAudit
@@ -425,7 +440,7 @@ namespace PackDB.Core.Tests
                 .Returns(false);
             var result = DataManager.Write(ExpectedAuditedEntity);
             MockDataStream
-                .Verify(x => x.Rollback(ExpectedAuditedEntity.Id, (DataEntity)null), Times.Once);
+                .Verify(x => x.Rollback(ExpectedAuditedEntity.Id, (DataEntity) null), Times.Once);
             MockIndexer
                 .Verify(x => x.Index(ExpectedAuditedEntity), Times.Once);
             MockAudit
@@ -461,7 +476,7 @@ namespace PackDB.Core.Tests
                 .Returns(false);
             var result = DataManager.Write(ExpectedAuditedEntity);
             MockDataStream
-                .Verify(x => x.Rollback(ExpectedAuditedEntity.Id, (DataEntity)null), Times.Never);
+                .Verify(x => x.Rollback(ExpectedAuditedEntity.Id, (DataEntity) null), Times.Never);
             MockIndexer
                 .Verify(x => x.Index(ExpectedAuditedEntity), Times.Once);
             MockAudit
@@ -544,7 +559,7 @@ namespace PackDB.Core.Tests
                 .Verify(x => x.Delete<AuditedEntity>(It.IsAny<int>()), Times.Never);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public bool DeleteDataWithAuditDeleteFails()
         {
@@ -599,7 +614,7 @@ namespace PackDB.Core.Tests
         {
             return DataManager.Restore<BasicEntity>(ExpectedBasicEntity.Id);
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public bool RestoreDataWhenDoesNotExistButUndeleteFails()
         {
@@ -611,7 +626,7 @@ namespace PackDB.Core.Tests
                 .Returns(false);
             return DataManager.Restore<BasicEntity>(ExpectedBasicEntity.Id);
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public bool RestoreDataWithAuditingWhenDoesNotExistButUndeleteEventFails()
         {
@@ -630,7 +645,7 @@ namespace PackDB.Core.Tests
                 .Verify(x => x.Delete<AuditedEntity>(ExpectedAuditedEntity.Id), Times.Once);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public bool RestoreDataWithAuditingWhenDoesNotExistButCommitEventFails()
         {
@@ -654,7 +669,7 @@ namespace PackDB.Core.Tests
                 .Verify(x => x.Delete<AuditedEntity>(ExpectedAuditedEntity.Id), Times.Once);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public bool RestoreDataWithAuditingWhenDoesNotExistButIndexingFails()
         {
@@ -681,7 +696,7 @@ namespace PackDB.Core.Tests
                 .Verify(x => x.Delete<AuditedEntity>(ExpectedAuditedEntity.Id), Times.Once);
             return result;
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
         public bool RestoreDataWithAuditingWhenDoesNotExistAndRestoredSuccessfully()
         {
@@ -703,7 +718,7 @@ namespace PackDB.Core.Tests
                 .Returns(true);
             return DataManager.Restore<AuditedEntity>(ExpectedAuditedEntity.Id);
         }
-        
+
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public bool RestoreDataWhenDoesNotExistButIndexingFails()
         {
@@ -748,5 +763,10 @@ namespace PackDB.Core.Tests
             return result;
         }
 
+        [Test(Author = "PackDB Creator")]
+        public void GetNextIdReturnsDataStreamsNextId()
+        {
+            Assert.AreEqual(ExpectedNextBasicEntityId, DataManager.GetNextId<BasicEntity>());
+        }
     }
 }

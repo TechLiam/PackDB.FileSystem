@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using PackDB.Core.Data;
 using PackDB.FileSystem.Attributes;
 
@@ -6,35 +8,19 @@ namespace PackDB.FileSystem.DataWorker
 {
     public class FileDataWorker : IFileDataWorker
     {
-        
-        private IFileStreamer FileStreamer { get; set; }
-
-        private static string GetFileName<TDataType>(int id)
+        [ExcludeFromCodeCoverage]
+        public FileDataWorker()
         {
-            return $"{typeof(TDataType).Name}\\{id}.data";
+            FileStreamer = new FileStreamer();
         }
 
-        private static int MaxAttempts<TDataType>()
-        {
-            var attributes = typeof(TDataType).GetCustomAttributes(typeof(RetryAttemptsAttribute), true)
-                .Cast<RetryAttemptsAttribute>().ToArray();
-            if (attributes.Any())
-            {
-                return attributes.Max(x => x.MaxAttempts);
-            }
-            return 1;
-        }
-
-        private static bool IsSoftDelete<TDataType>()
-        {
-            return typeof(TDataType).GetCustomAttributes(typeof(SoftDeleteAttribute), true).Any();
-        }
-        
         public FileDataWorker(IFileStreamer fileStreamer)
         {
             FileStreamer = fileStreamer;
         }
-        
+
+        private IFileStreamer FileStreamer { get; }
+
         public bool Write<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
             var filename = GetFileName<TDataType>(id);
@@ -44,21 +30,17 @@ namespace PackDB.FileSystem.DataWorker
             {
                 attempts++;
                 if (FileStreamer.GetLockForFile(filename))
-                {
                     try
                     {
-                        if (FileStreamer.WriteDataToStream(filename, data))
-                        {
-                            return true;
-                        }
+                        if (FileStreamer.WriteDataToStream(filename, data)) return true;
                         FileStreamer.UnlockFile(filename);
                     }
                     catch
                     {
                         FileStreamer.UnlockFile(filename);
                     }
-                }
             }
+
             return false;
         }
 
@@ -82,6 +64,7 @@ namespace PackDB.FileSystem.DataWorker
                 {
                 }
             }
+
             DiscardChanges<TDataType>(id);
             return false;
         }
@@ -107,7 +90,6 @@ namespace PackDB.FileSystem.DataWorker
             {
                 attempts++;
                 if (FileStreamer.GetLockForFile(filename))
-                {
                     try
                     {
                         var result = FileStreamer.ReadDataFromStream<TDataType>(filename);
@@ -115,15 +97,14 @@ namespace PackDB.FileSystem.DataWorker
                     }
                     catch
                     {
-                        
                     }
                     finally
                     {
                         FileStreamer.UnlockFile(filename);
                         FileStreamer.CloseStream(filename);
                     }
-                }
             }
+
             return null;
         }
 
@@ -134,9 +115,9 @@ namespace PackDB.FileSystem.DataWorker
 
         public bool Delete<TDataType>(int id) where TDataType : DataEntity
         {
-            return IsSoftDelete<TDataType>() ? 
-                FileStreamer.SoftDelete(GetFileName<TDataType>(id)) : 
-                FileStreamer.Delete(GetFileName<TDataType>(id));
+            return IsSoftDelete<TDataType>()
+                ? FileStreamer.SoftDelete(GetFileName<TDataType>(id))
+                : FileStreamer.Delete(GetFileName<TDataType>(id));
         }
 
         public bool Undelete<TDataType>(int id) where TDataType : DataEntity
@@ -149,6 +130,35 @@ namespace PackDB.FileSystem.DataWorker
             while (!WriteAndCommit(id, data))
             {
             }
+        }
+
+        public int NextId<TDataType>() where TDataType : DataEntity
+        {
+            var files = FileStreamer.GetAllFileNames(GetFolderName<TDataType>(), "data");
+            return files.Any() ? Math.Max(files.Max(int.Parse) + 1, 1) : 1;
+        }
+
+        private static string GetFolderName<TDataType>()
+        {
+            return typeof(TDataType).Name;
+        }
+
+        private static string GetFileName<TDataType>(int id)
+        {
+            return $"{GetFolderName<TDataType>()}\\{id}.data";
+        }
+
+        private static int MaxAttempts<TDataType>()
+        {
+            var attributes = typeof(TDataType).GetCustomAttributes(typeof(RetryAttemptsAttribute), true)
+                .Cast<RetryAttemptsAttribute>().ToArray();
+            if (attributes.Any()) return attributes.Max(x => x.MaxAttempts);
+            return 1;
+        }
+
+        private static bool IsSoftDelete<TDataType>()
+        {
+            return typeof(TDataType).GetCustomAttributes(typeof(SoftDeleteAttribute), true).Any();
         }
     }
 }

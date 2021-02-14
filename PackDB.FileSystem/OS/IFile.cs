@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace PackDB.FileSystem.OS
+﻿namespace PackDB.FileSystem.OS
 {
     public interface IFile
     {
