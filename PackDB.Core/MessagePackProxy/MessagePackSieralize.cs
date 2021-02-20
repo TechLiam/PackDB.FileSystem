@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading.Tasks;
 using MessagePack;
 
 namespace PackDB.Core.MessagePackProxy
@@ -15,14 +16,14 @@ namespace PackDB.Core.MessagePackProxy
 
         private MessagePackSerializerOptions Options { get; }
 
-        public void Serialize<TDataType>(Stream stream, TDataType data)
+        public Task Serialize<TDataType>(Stream stream, TDataType data)
         {
-            MessagePack.MessagePackSerializer.Serialize(stream, data, Options);
+            return MessagePack.MessagePackSerializer.SerializeAsync(stream, data, Options);
         }
 
-        public TDataType Deserialize<TDataType>(Stream stream)
+        public async ValueTask<TDataType> Deserialize<TDataType>(Stream stream)
         {
-            return MessagePack.MessagePackSerializer.Deserialize<TDataType>(stream, Options);
+            return await MessagePack.MessagePackSerializer.DeserializeAsync<TDataType>(stream, Options);
         }
     }
 }

@@ -1,11 +1,13 @@
-﻿namespace PackDB.FileSystem.OS
+﻿using System.Threading.Tasks;
+
+namespace PackDB.FileSystem.OS
 {
     public interface IFile
     {
-        IStream OpenWrite(string path);
-        IStream OpenRead(string path);
-        bool Exists(string path);
-        void Delete(string path);
-        void Move(string path, string destination);
+        Task<IStream> OpenWrite(string path);
+        Task<IStream> OpenRead(string path);
+        Task<bool> Exists(string path);
+        Task Delete(string path);
+        Task Move(string path, string destination);
     }
 }

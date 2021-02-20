@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -37,18 +38,18 @@ namespace PackDB.FileSystem.Tests
             MockMessagePackSerializer = new Mock<IMessagePackSerializer>();
             MockMessagePackSerializer
                 .Setup(x => x.Deserialize<BasicData>(ReadStream))
-                .Returns(Data);
+                .ReturnsAsync(Data);
 
             MockFile = new Mock<IFile>();
             MockFile
                 .Setup(x => x.OpenWrite(Filename))
-                .Returns(MockWriteStream.Object);
+                .ReturnsAsync(MockWriteStream.Object);
             MockFile
                 .Setup(x => x.OpenRead(Filename))
-                .Returns(MockReadStream.Object);
+                .ReturnsAsync(MockReadStream.Object);
             MockFile
                 .Setup(x => x.Exists(Filename))
-                .Returns(true);
+                .ReturnsAsync(true);
 
             MockSemaphore = new Mock<ISemaphore>();
             MockSemaphore
@@ -80,83 +81,83 @@ namespace PackDB.FileSystem.Tests
         private Mock<ISemaphore> MockSemaphore { get; set; }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool GetLockForFileWaitFails()
+        public async Task<bool> GetLockForFileWaitFails()
         {
             MockSemaphore
                 .Setup(x => x.Wait(It.Is<TimeSpan>(y => Math.Abs(y.TotalMinutes - 1) < 1)))
                 .Returns(false);
             var result = FileStreamer.GetLockForFile(Filename);
             MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
-            return result;
+            return await result;
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool GetLockForFileWaitSuccess()
+        public async Task<bool> GetLockForFileWaitSuccess()
         {
             var result = FileStreamer.GetLockForFile(Filename);
             MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
-            return result;
+            return await result;
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool GetLockForFileCreateOnlyOneSemaphore()
+        public async Task<bool> GetLockForFileCreateOnlyOneSemaphore()
         {
-            FileStreamer.GetLockForFile(Filename);
+            await FileStreamer.GetLockForFile(Filename);
             var result = FileStreamer.GetLockForFile(Filename);
             MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
-            return result;
+            return await result;
         }
 
         [Test(Author = "PackDB Creator")]
-        public void UnlockFileWhenThereIsNoLock()
+        public async Task UnlockFileWhenThereIsNoLock()
         {
-            FileStreamer.UnlockFile(Filename);
+            await FileStreamer.UnlockFile(Filename);
             MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Never);
             MockSemaphore.Verify(x => x.Release(), Times.Never);
         }
 
         [Test(Author = "PackDB Creator")]
-        public void UnlockFileWhenThereIsALock()
+        public async Task UnlockFileWhenThereIsALock()
         {
-            FileStreamer.GetLockForFile(Filename);
-            FileStreamer.UnlockFile(Filename);
+            await FileStreamer.GetLockForFile(Filename);
+            await FileStreamer.UnlockFile(Filename);
             MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
             MockSemaphore.Verify(x => x.Release(), Times.Once);
         }
 
         [Test(Author = "PackDB Creator")]
-        public void UnlockFileWhenThereIsALockMultipleTimes()
+        public async Task UnlockFileWhenThereIsALockMultipleTimes()
         {
-            FileStreamer.GetLockForFile(Filename);
-            FileStreamer.UnlockFile(Filename);
-            FileStreamer.UnlockFile(Filename);
+            await FileStreamer.GetLockForFile(Filename);
+            await FileStreamer.UnlockFile(Filename);
+            await FileStreamer.UnlockFile(Filename);
             MockSemaphoreFactory.Verify(x => x.Create(1, 1), Times.Once);
             MockSemaphore.Verify(x => x.Release(), Times.Exactly(2));
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool WriteDataToStreamNewStreamNeeded()
+        public async Task<bool> WriteDataToStreamNewStreamNeeded()
         {
             var result = FileStreamer.WriteDataToStream(Filename, Data);
             MockFile.Verify(x => x.OpenWrite(Filename), Times.Once);
             MockMessagePackSerializer.Verify(x => x.Serialize(WriteStream, Data), Times.Once);
-            return result;
+            return await result;
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool WriteDataToStreamMultipleTimes()
+        public async Task<bool> WriteDataToStreamMultipleTimes()
         {
-            FileStreamer.WriteDataToStream(Filename, Data);
+            await FileStreamer.WriteDataToStream(Filename, Data);
             var result = FileStreamer.WriteDataToStream(Filename, Data);
             MockFile.Verify(x => x.OpenWrite(Filename), Times.Once);
             MockMessagePackSerializer.Verify(x => x.Serialize(WriteStream, Data), Times.Exactly(2));
-            return result;
+            return await result;
         }
 
         [Test(Author = "PackDB Creator")]
-        public void ReadDataFromStreamNewStreamNeeded()
+        public async Task ReadDataFromStreamNewStreamNeeded()
         {
-            Assert.AreSame(Data, FileStreamer.ReadDataFromStream<BasicData>(Filename));
+            Assert.AreSame(Data, await FileStreamer.ReadDataFromStream<BasicData>(Filename));
             MockFile.Verify(x => x.OpenRead(Filename), Times.Once);
             MockReadStream.Verify(x => x.Close(), Times.Once);
             MockReadStream.Verify(x => x.Dispose(), Times.Once);
@@ -164,29 +165,29 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator")]
-        public void ReadDataFromStreamMultipleTimes()
+        public async Task ReadDataFromStreamMultipleTimes()
         {
-            FileStreamer.ReadDataFromStream<BasicData>(Filename);
-            Assert.AreSame(Data, FileStreamer.ReadDataFromStream<BasicData>(Filename));
+            await FileStreamer.ReadDataFromStream<BasicData>(Filename);
+            Assert.AreSame(Data, await FileStreamer.ReadDataFromStream<BasicData>(Filename));
             MockFile.Verify(x => x.OpenRead(Filename), Times.Exactly(2));
             MockMessagePackSerializer.Verify(x => x.Deserialize<BasicData>(ReadStream), Times.Exactly(2));
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool CloseStreamWhenThereIsNoStream()
+        public async Task<bool> CloseStreamWhenThereIsNoStream()
         {
             var result = FileStreamer.CloseStream(Filename);
             MockWriteStream
                 .Verify(x => x.Close(), Times.Never);
             MockReadStream
                 .Verify(x => x.Close(), Times.Never);
-            return result;
+            return await result;
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool CloseStreamWhenThereIsAWriteStream()
+        public async Task<bool> CloseStreamWhenThereIsAWriteStream()
         {
-            FileStreamer.WriteDataToStream(Filename, Data);
+            await FileStreamer.WriteDataToStream(Filename, Data);
             var result = FileStreamer.CloseStream(Filename);
             MockWriteStream
                 .Verify(x => x.Close(), Times.Once);
@@ -196,14 +197,14 @@ namespace PackDB.FileSystem.Tests
                 .Verify(x => x.Close(), Times.Never);
             MockReadStream
                 .Verify(x => x.Dispose(), Times.Never);
-            return result;
+            return await result;
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool CloseStreamWhenThereIsAWriteStreamIsAlreadyClosed()
+        public async Task<bool> CloseStreamWhenThereIsAWriteStreamIsAlreadyClosed()
         {
-            FileStreamer.WriteDataToStream(Filename, Data);
-            FileStreamer.CloseStream(Filename);
+            await FileStreamer.WriteDataToStream(Filename, Data);
+            await FileStreamer.CloseStream(Filename);
             var result = FileStreamer.CloseStream(Filename);
             MockWriteStream
                 .Verify(x => x.Close(), Times.Once);
@@ -213,14 +214,14 @@ namespace PackDB.FileSystem.Tests
                 .Verify(x => x.Close(), Times.Never);
             MockReadStream
                 .Verify(x => x.Dispose(), Times.Never);
-            return result;
+            return await result;
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool CloseStreamWhenThereIsAReadStreamIsAlreadyClosed()
+        public async Task<bool> CloseStreamWhenThereIsAReadStreamIsAlreadyClosed()
         {
-            FileStreamer.ReadDataFromStream<BasicData>(Filename);
-            FileStreamer.CloseStream(Filename);
+            await FileStreamer.ReadDataFromStream<BasicData>(Filename);
+            await FileStreamer.CloseStream(Filename);
             var result = FileStreamer.CloseStream(Filename);
             MockWriteStream
                 .Verify(x => x.Close(), Times.Never);
@@ -230,13 +231,13 @@ namespace PackDB.FileSystem.Tests
                 .Verify(x => x.Close(), Times.Once);
             MockReadStream
                 .Verify(x => x.Dispose(), Times.Once);
-            return result;
+            return await result;
         }
 
         [Test(Author = "PackDB Creator")]
-        public void DisposeOfStreamWhenThereIsNoStream()
+        public async Task DisposeOfStreamWhenThereIsNoStream()
         {
-            FileStreamer.DisposeOfStream(Filename);
+            await FileStreamer.DisposeOfStream(Filename);
             MockWriteStream
                 .Verify(x => x.Close(), Times.Never);
             MockReadStream
@@ -248,10 +249,10 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator")]
-        public void DisposeOfStreamWhenThereIsAWriteStream()
+        public async Task DisposeOfStreamWhenThereIsAWriteStream()
         {
-            FileStreamer.WriteDataToStream(Filename, Data);
-            FileStreamer.DisposeOfStream(Filename);
+            await FileStreamer.WriteDataToStream(Filename, Data);
+            await FileStreamer.DisposeOfStream(Filename);
             MockWriteStream
                 .Verify(x => x.Close(), Times.Never);
             MockWriteStream
@@ -263,10 +264,10 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator")]
-        public void DisposeOfStreamWhenThereIsAReadStream()
+        public async Task DisposeOfStreamWhenThereIsAReadStream()
         {
-            FileStreamer.ReadDataFromStream<BasicData>(Filename);
-            FileStreamer.DisposeOfStream(Filename);
+            await FileStreamer.ReadDataFromStream<BasicData>(Filename);
+            await FileStreamer.DisposeOfStream(Filename);
             MockWriteStream
                 .Verify(x => x.Close(), Times.Never);
             MockWriteStream
@@ -278,11 +279,11 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator")]
-        public void DisposeOfStreamWhenThereIsAWriteStreamIsAlreadyDisposed()
+        public async Task DisposeOfStreamWhenThereIsAWriteStreamIsAlreadyDisposed()
         {
-            FileStreamer.WriteDataToStream(Filename, Data);
-            FileStreamer.DisposeOfStream(Filename);
-            FileStreamer.DisposeOfStream(Filename);
+            await FileStreamer.WriteDataToStream(Filename, Data);
+            await FileStreamer.DisposeOfStream(Filename);
+            await FileStreamer.DisposeOfStream(Filename);
             MockWriteStream
                 .Verify(x => x.Close(), Times.Never);
             MockWriteStream
@@ -294,11 +295,11 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator")]
-        public void DisposeOfStreamWhenThereIsAReadStreamIsAlreadyDisposed()
+        public async Task DisposeOfStreamWhenThereIsAReadStreamIsAlreadyDisposed()
         {
-            FileStreamer.ReadDataFromStream<BasicData>(Filename);
-            FileStreamer.DisposeOfStream(Filename);
-            FileStreamer.DisposeOfStream(Filename);
+            await FileStreamer.ReadDataFromStream<BasicData>(Filename);
+            await FileStreamer.DisposeOfStream(Filename);
+            await FileStreamer.DisposeOfStream(Filename);
             MockWriteStream
                 .Verify(x => x.Close(), Times.Never);
             MockWriteStream
@@ -310,39 +311,47 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool ExistsWhenItDoesNotExist()
+        public async Task<bool> ExistsWhenItDoesNotExist()
         {
             MockFile
                 .Setup(x => x.Exists(Filename))
-                .Returns(false);
-            return FileStreamer.Exists(Filename);
+                .ReturnsAsync(false);
+            return await FileStreamer.Exists(Filename);
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool ExistsWhenItDoesExist()
+        public async Task<bool> ExistsWhenItDoesExist()
         {
-            return FileStreamer.Exists(Filename);
+            return await FileStreamer.Exists(Filename);
         }
 
         [Test(Author = "PackDB Creator")]
-        public void Delete()
+        public async Task Delete()
         {
-            FileStreamer.Delete(Filename);
+            await FileStreamer.Delete(Filename);
             MockFile.Verify(x => x.Delete(Filename), Times.Once);
         }
 
         [Test(Author = "PackDB Creator")]
-        public void SoftDelete()
+        public async Task SoftDelete()
         {
-            FileStreamer.SoftDelete(Filename);
+            await FileStreamer.SoftDelete(Filename);
             MockFile.Verify(x => x.Move(Filename, Filename + ".deleted"), Times.Once);
         }
 
         [Test(Author = "PackDB Creator")]
-        public void Undelete()
+        public async Task UndeleteWhenFileExists()
         {
-            FileStreamer.Undelete(Filename);
+            MockFile.Setup(x => x.Exists(Filename + ".deleted")).ReturnsAsync(true);
+            await FileStreamer.Undelete(Filename);
             MockFile.Verify(x => x.Move(Filename + ".deleted", Filename), Times.Once);
+        }
+
+        [Test(Author = "PackDB Creator")]
+        public async Task UndeleteWhenFileDoesNotExists()
+        {
+            await FileStreamer.Undelete(Filename);
+            MockFile.Verify(x => x.Move(Filename + ".deleted", Filename), Times.Never);
         }
 
         [Test(Author = "PackDB Creator")]

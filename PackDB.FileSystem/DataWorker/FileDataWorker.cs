@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using PackDB.Core.Data;
 using PackDB.FileSystem.Attributes;
 
@@ -28,7 +29,7 @@ namespace PackDB.FileSystem.DataWorker
 
         private string TopLevelDataFolderName { get; }
         
-        public bool Write<TDataType>(int id, TDataType data) where TDataType : DataEntity
+        public async Task<bool> Write<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
             var filename = GetFileName<TDataType>(id);
             var maxAttempts = MaxAttempts<TDataType>();
@@ -36,22 +37,22 @@ namespace PackDB.FileSystem.DataWorker
             while (attempts < maxAttempts)
             {
                 attempts++;
-                if (FileStreamer.GetLockForFile(filename))
+                if (await FileStreamer.GetLockForFile(filename))
                     try
                     {
-                        if (FileStreamer.WriteDataToStream(filename, data)) return true;
-                        FileStreamer.UnlockFile(filename);
+                        if (await FileStreamer.WriteDataToStream(filename, data)) return true;
+                        await FileStreamer.UnlockFile(filename);
                     }
                     catch
                     {
-                        FileStreamer.UnlockFile(filename);
+                        await FileStreamer.UnlockFile(filename);
                     }
             }
 
             return false;
         }
 
-        public bool Commit<TDataType>(int id) where TDataType : DataEntity
+        public async Task<bool> Commit<TDataType>(int id) where TDataType : DataEntity
         {
             var filename = GetFileName<TDataType>(id);
             var maxAttempts = MaxAttempts<TDataType>();
@@ -61,9 +62,9 @@ namespace PackDB.FileSystem.DataWorker
                 attempts++;
                 try
                 {
-                    if (FileStreamer.CloseStream(filename))
+                    if (await FileStreamer.CloseStream(filename))
                     {
-                        FileStreamer.UnlockFile(filename);
+                        await FileStreamer.UnlockFile(filename);
                         return true;
                     }
                 }
@@ -72,23 +73,23 @@ namespace PackDB.FileSystem.DataWorker
                 }
             }
 
-            DiscardChanges<TDataType>(id);
+            await DiscardChanges<TDataType>(id);
             return false;
         }
 
-        public void DiscardChanges<TDataType>(int id) where TDataType : DataEntity
+        public async Task DiscardChanges<TDataType>(int id) where TDataType : DataEntity
         {
             var filename = GetFileName<TDataType>(id);
-            FileStreamer.DisposeOfStream(filename);
-            FileStreamer.UnlockFile(filename);
+            await FileStreamer.DisposeOfStream(filename);
+            await FileStreamer.UnlockFile(filename);
         }
 
-        public bool WriteAndCommit<TDataType>(int id, TDataType data) where TDataType : DataEntity
+        public async Task<bool> WriteAndCommit<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
-            return Write(id, data) && Commit<TDataType>(id);
+            return await Write(id, data) && await Commit<TDataType>(id);
         }
 
-        public TDataType Read<TDataType>(int id) where TDataType : DataEntity
+        public async Task<TDataType> Read<TDataType>(int id) where TDataType : DataEntity
         {
             var filename = GetFileName<TDataType>(id);
             var maxAttempts = MaxAttempts<TDataType>();
@@ -96,45 +97,44 @@ namespace PackDB.FileSystem.DataWorker
             while (attempts < maxAttempts)
             {
                 attempts++;
-                if (FileStreamer.GetLockForFile(filename))
+                if (await FileStreamer.GetLockForFile(filename))
                     try
                     {
-                        var result = FileStreamer.ReadDataFromStream<TDataType>(filename);
-                        return result;
+                        return await FileStreamer.ReadDataFromStream<TDataType>(filename);
                     }
                     catch
                     {
                     }
                     finally
                     {
-                        FileStreamer.UnlockFile(filename);
-                        FileStreamer.CloseStream(filename);
+                        await FileStreamer.UnlockFile(filename);
+                        await FileStreamer.CloseStream(filename);
                     }
             }
 
             return null;
         }
 
-        public bool Exists<TDataType>(int id) where TDataType : DataEntity
+        public Task<bool> Exists<TDataType>(int id) where TDataType : DataEntity
         {
             return FileStreamer.Exists(GetFileName<TDataType>(id));
         }
 
-        public bool Delete<TDataType>(int id) where TDataType : DataEntity
+        public Task<bool> Delete<TDataType>(int id) where TDataType : DataEntity
         {
             return IsSoftDelete<TDataType>()
                 ? FileStreamer.SoftDelete(GetFileName<TDataType>(id))
                 : FileStreamer.Delete(GetFileName<TDataType>(id));
         }
 
-        public bool Undelete<TDataType>(int id) where TDataType : DataEntity
+        public Task<bool> Undelete<TDataType>(int id) where TDataType : DataEntity
         {
-            return IsSoftDelete<TDataType>() && FileStreamer.Undelete(GetFileName<TDataType>(id));
+            return IsSoftDelete<TDataType>() ? FileStreamer.Undelete(GetFileName<TDataType>(id)) : Task.FromResult(false);
         }
 
-        public void Rollback<TDataType>(int id, TDataType data) where TDataType : DataEntity
+        public async Task Rollback<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
-            while (!WriteAndCommit(id, data))
+            while (!await WriteAndCommit(id, data))
             {
             }
         }

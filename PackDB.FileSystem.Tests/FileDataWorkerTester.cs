@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -33,26 +34,26 @@ namespace PackDB.FileSystem.Tests
             MockFileStreamer = new Mock<IFileStreamer>();
             MockFileStreamer
                 .Setup(x => x.GetLockForFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"))
-                .Returns(true);
+                .ReturnsAsync(true);
             MockFileStreamer
                 .Setup(x => x.WriteDataToStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data", ExpectedBasicData))
-                .Returns(true);
+                .ReturnsAsync(true);
             MockFileStreamer
                 .Setup(x => x.CloseStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"))
-                .Returns(true);
+                .ReturnsAsync(true);
             MockFileStreamer
                 .Setup(x => x.ReadDataFromStream<BasicData>("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"))
-                .Returns(ExpectedBasicData);
+                .ReturnsAsync(ExpectedBasicData);
             MockFileStreamer
                 .Setup(x => x.GetLockForFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"))
-                .Returns(true);
+                .ReturnsAsync(true);
             MockFileStreamer
                 .Setup(x => x.WriteDataToStream("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data",
                     ExpectedRetryBasicData))
-                .Returns(true);
+                .ReturnsAsync(true);
             MockFileStreamer
                 .Setup(x => x.ReadDataFromStream<RetryBasicData>("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"))
-                .Returns(ExpectedRetryBasicData);
+                .ReturnsAsync(ExpectedRetryBasicData);
 
             FileDataWorker = new FileDataWorker(MockFileStreamer.Object);
         }
@@ -65,34 +66,34 @@ namespace PackDB.FileSystem.Tests
         private Mock<IFileStreamer> MockFileStreamer { get; set; }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteFailsToGetLock()
+        public async Task<bool> WriteFailsToGetLock()
         {
             MockFileStreamer
                 .Setup(x => x.GetLockForFile(It.IsAny<string>()))
-                .Returns(false);
-            var result = FileDataWorker.Write(ExpectedBasicData.Id, ExpectedBasicData);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.Write(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile(It.IsAny<string>()), Times.Once);
             return result;
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteFailsToGetLockWithRetry()
+        public async Task<bool> WriteFailsToGetLockWithRetry()
         {
             MockFileStreamer
                 .Setup(x => x.GetLockForFile(It.IsAny<string>()))
-                .Returns(false);
-            var result = FileDataWorker.Write(ExpectedRetryBasicData.Id, ExpectedRetryBasicData);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.Write(ExpectedRetryBasicData.Id, ExpectedRetryBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile(It.IsAny<string>()), Times.Exactly(3));
             return result;
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteFailsToWriteDataToStream()
+        public async Task<bool> WriteFailsToWriteDataToStream()
         {
             MockFileStreamer
                 .Setup(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<BasicData>()))
-                .Returns(false);
-            var result = FileDataWorker.Write(ExpectedBasicData.Id, ExpectedBasicData);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.Write(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data", ExpectedBasicData), Times.Once);
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
@@ -100,12 +101,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteFailsToWriteDataToStreamWithRetry()
+        public async Task<bool> WriteFailsToWriteDataToStreamWithRetry()
         {
             MockFileStreamer
                 .Setup(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<RetryBasicData>()))
-                .Returns(false);
-            var result = FileDataWorker.Write(ExpectedRetryBasicData.Id, ExpectedRetryBasicData);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.Write(ExpectedRetryBasicData.Id, ExpectedRetryBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"), Times.Exactly(3));
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data", ExpectedRetryBasicData), Times.Exactly(3));
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"), Times.Exactly(3));
@@ -113,12 +114,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteFailsToWriteDataToStreamDueToException()
+        public async Task<bool> WriteFailsToWriteDataToStreamDueToException()
         {
             MockFileStreamer
                 .Setup(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<BasicData>()))
                 .Throws<Exception>();
-            var result = FileDataWorker.Write(ExpectedBasicData.Id, ExpectedBasicData);
+            var result = await FileDataWorker.Write(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data", ExpectedBasicData), Times.Once);
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
@@ -126,12 +127,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteFailsToWriteDataToStreamDueToExceptionWithRetry()
+        public async Task<bool> WriteFailsToWriteDataToStreamDueToExceptionWithRetry()
         {
             MockFileStreamer
                 .Setup(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<RetryBasicData>()))
                 .Throws<Exception>();
-            var result = FileDataWorker.Write(ExpectedRetryBasicData.Id, ExpectedRetryBasicData);
+            var result = await FileDataWorker.Write(ExpectedRetryBasicData.Id, ExpectedRetryBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"), Times.Exactly(3));
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data", ExpectedRetryBasicData), Times.Exactly(3));
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"), Times.Exactly(3));
@@ -139,9 +140,9 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool WriteSuccessfulFirstTime()
+        public async Task<bool> WriteSuccessfulFirstTime()
         {
-            var result = FileDataWorker.Write(ExpectedBasicData.Id, ExpectedBasicData);
+            var result = await FileDataWorker.Write(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data", ExpectedBasicData), Times.Once);
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Never);
@@ -149,14 +150,14 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool WriteSuccessfulAfterRetry()
+        public async Task<bool> WriteSuccessfulAfterRetry()
         {
             MockFileStreamer
                 .SetupSequence(x => x.WriteDataToStream("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data",
                     ExpectedRetryBasicData))
-                .Returns(false)
-                .Returns(true);
-            var result = FileDataWorker.Write(ExpectedRetryBasicData.Id, ExpectedRetryBasicData);
+                .ReturnsAsync(false)
+                .ReturnsAsync(true);
+            var result = await FileDataWorker.Write(ExpectedRetryBasicData.Id, ExpectedRetryBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"), Times.Exactly(2));
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data", ExpectedRetryBasicData), Times.Exactly(2));
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"), Times.Exactly(1));
@@ -164,12 +165,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool CommitFailsToCloseStream()
+        public async Task<bool> CommitFailsToCloseStream()
         {
             MockFileStreamer
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
-                .Returns(false);
-            var result = FileDataWorker.Commit<BasicData>(ExpectedBasicData.Id);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.Commit<BasicData>(ExpectedBasicData.Id);
             MockFileStreamer
                 .Verify(x => x.CloseStream(It.IsAny<string>()), Times.Once);
             MockFileStreamer
@@ -180,12 +181,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool CommitFailsToCloseStreamWithRetry()
+        public async Task<bool> CommitFailsToCloseStreamWithRetry()
         {
             MockFileStreamer
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
-                .Returns(false);
-            var result = FileDataWorker.Commit<RetryBasicData>(ExpectedRetryBasicData.Id);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.Commit<RetryBasicData>(ExpectedRetryBasicData.Id);
             MockFileStreamer
                 .Verify(x => x.CloseStream(It.IsAny<string>()), Times.Exactly(3));
             MockFileStreamer
@@ -196,12 +197,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool CommitFailsToCloseStreamDueToException()
+        public async Task<bool> CommitFailsToCloseStreamDueToException()
         {
             MockFileStreamer
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
                 .Throws<Exception>();
-            var result = FileDataWorker.Commit<BasicData>(ExpectedBasicData.Id);
+            var result = await FileDataWorker.Commit<BasicData>(ExpectedBasicData.Id);
             MockFileStreamer
                 .Verify(x => x.CloseStream(It.IsAny<string>()), Times.Once);
             MockFileStreamer
@@ -212,12 +213,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool CommitFailsToCloseStreamDueToExceptionWithRetry()
+        public async Task<bool> CommitFailsToCloseStreamDueToExceptionWithRetry()
         {
             MockFileStreamer
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
                 .Throws<Exception>();
-            var result = FileDataWorker.Commit<RetryBasicData>(ExpectedRetryBasicData.Id);
+            var result = await FileDataWorker.Commit<RetryBasicData>(ExpectedRetryBasicData.Id);
             MockFileStreamer
                 .Verify(x => x.CloseStream(It.IsAny<string>()), Times.Exactly(3));
             MockFileStreamer
@@ -228,12 +229,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool CommitSuccessful()
+        public async Task<bool> CommitSuccessful()
         {
             MockFileStreamer
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
-                .Returns(true);
-            var result = FileDataWorker.Commit<BasicData>(ExpectedBasicData.Id);
+                .ReturnsAsync(true);
+            var result = await FileDataWorker.Commit<BasicData>(ExpectedBasicData.Id);
             MockFileStreamer
                 .Verify(x => x.CloseStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
             MockFileStreamer
@@ -244,13 +245,13 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool CommitSuccessfulWithRetry()
+        public async Task<bool> CommitSuccessfulWithRetry()
         {
             MockFileStreamer
                 .SetupSequence(x => x.CloseStream(It.IsAny<string>()))
-                .Returns(false)
-                .Returns(true);
-            var result = FileDataWorker.Commit<RetryBasicData>(ExpectedRetryBasicData.Id);
+                .ReturnsAsync(false)
+                .ReturnsAsync(true);
+            var result = await FileDataWorker.Commit<RetryBasicData>(ExpectedRetryBasicData.Id);
             MockFileStreamer
                 .Verify(x => x.CloseStream("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"), Times.Exactly(2));
             MockFileStreamer
@@ -261,20 +262,20 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator")]
-        public void DiscardChanges()
+        public async Task DiscardChanges()
         {
-            FileDataWorker.DiscardChanges<BasicData>(ExpectedBasicData.Id);
+            await FileDataWorker.DiscardChanges<BasicData>(ExpectedBasicData.Id);
             MockFileStreamer.Verify(x => x.DisposeOfStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"));
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"));
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteAndCommitFailsToGetLock()
+        public async Task<bool> WriteAndCommitFailsToGetLock()
         {
             MockFileStreamer
                 .Setup(x => x.GetLockForFile(It.IsAny<string>()))
-                .Returns(false);
-            var result = FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile(It.IsAny<string>()), Times.Once);
             MockFileStreamer.Verify(x => x.CloseStream("BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Never);
             MockFileStreamer.Verify(x => x.DisposeOfStream("BasicData\\" + ExpectedBasicData.Id + ".data"),
@@ -283,12 +284,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteAndCommitFailsToWriteDataToStream()
+        public async Task<bool> WriteAndCommitFailsToWriteDataToStream()
         {
             MockFileStreamer
                 .Setup(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<BasicData>()))
-                .Returns(false);
-            var result = FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data", ExpectedBasicData), Times.Once);
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
@@ -298,12 +299,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteAndCommitFailsToWriteDataToStreamDueToException()
+        public async Task<bool> WriteAndCommitFailsToWriteDataToStreamDueToException()
         {
             MockFileStreamer
                 .Setup(x => x.WriteDataToStream(It.IsAny<string>(), It.IsAny<BasicData>()))
                 .Throws<Exception>();
-            var result = FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
+            var result = await FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data", ExpectedBasicData), Times.Once);
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
@@ -313,12 +314,12 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool WriteAndCommitFailsToCloseStream()
+        public async Task<bool> WriteAndCommitFailsToCloseStream()
         {
             MockFileStreamer
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
-                .Returns(false);
-            var result = FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data", ExpectedBasicData),Times.Once);
             MockFileStreamer.Verify(x => x.DisposeOfStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
@@ -327,9 +328,9 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool WriteAndCommitSuccessful()
+        public async Task<bool> WriteAndCommitSuccessful()
         {
-            var result = FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
+            var result = await FileDataWorker.WriteAndCommit(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
             MockFileStreamer.Verify(x => x.WriteDataToStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data", ExpectedBasicData), Times.Once);
             MockFileStreamer.Verify(x => x.CloseStream("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
@@ -339,152 +340,152 @@ namespace PackDB.FileSystem.Tests
         }
 
         [Test(Author = "PackDB Creator")]
-        public void ReadFailsToGetLock()
+        public async Task ReadFailsToGetLock()
         {
             MockFileStreamer
                 .Setup(x => x.GetLockForFile(It.IsAny<string>()))
-                .Returns(false);
-            Assert.IsNull(FileDataWorker.Read<BasicData>(ExpectedBasicData.Id));
+                .ReturnsAsync(false);
+            Assert.IsNull(await FileDataWorker.Read<BasicData>(ExpectedBasicData.Id));
             MockFileStreamer.Verify(x => x.ReadDataFromStream<BasicData>(It.IsAny<string>()), Times.Never);
         }
 
         [Test(Author = "PackDB Creator")]
-        public void ReadFailsDueToReadThrowingAnException()
+        public async Task ReadFailsDueToReadThrowingAnException()
         {
             MockFileStreamer
                 .Setup(x => x.ReadDataFromStream<BasicData>(It.IsAny<string>()))
                 .Throws<Exception>();
-            Assert.IsNull(FileDataWorker.Read<BasicData>(ExpectedBasicData.Id));
+            Assert.IsNull(await FileDataWorker.Read<BasicData>(ExpectedBasicData.Id));
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
         }
 
         [Test(Author = "PackDB Creator")]
-        public void ReadSuccessful()
+        public async Task ReadSuccessful()
         {
-            Assert.AreSame(ExpectedBasicData, FileDataWorker.Read<BasicData>(ExpectedBasicData.Id));
+            Assert.AreSame(ExpectedBasicData, await FileDataWorker.Read<BasicData>(ExpectedBasicData.Id));
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"), Times.Once);
         }
 
         [Test(Author = "PackDB Creator")]
-        public void ReadFailsToGetLockWithRetry()
+        public async Task ReadFailsToGetLockWithRetry()
         {
             MockFileStreamer
                 .Setup(x => x.GetLockForFile(It.IsAny<string>()))
-                .Returns(false);
-            Assert.IsNull(FileDataWorker.Read<RetryBasicData>(ExpectedRetryBasicData.Id));
+                .ReturnsAsync(false);
+            Assert.IsNull(await FileDataWorker.Read<RetryBasicData>(ExpectedRetryBasicData.Id));
             MockFileStreamer.Verify(x => x.ReadDataFromStream<RetryBasicData>(It.IsAny<string>()), Times.Never);
         }
 
         [Test(Author = "PackDB Creator")]
-        public void ReadFailsDueToReadThrowingAnExceptionWithRetry()
+        public async Task ReadFailsDueToReadThrowingAnExceptionWithRetry()
         {
             MockFileStreamer
                 .Setup(x => x.ReadDataFromStream<RetryBasicData>(It.IsAny<string>()))
                 .Throws<Exception>();
-            Assert.IsNull(FileDataWorker.Read<RetryBasicData>(ExpectedRetryBasicData.Id));
+            Assert.IsNull(await FileDataWorker.Read<RetryBasicData>(ExpectedRetryBasicData.Id));
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"),
                 Times.Exactly(3));
         }
 
         [Test(Author = "PackDB Creator")]
-        public void ReadSuccessfulWithRetry()
+        public async Task ReadSuccessfulWithRetry()
         {
             MockFileStreamer
                 .SetupSequence(x =>
                     x.ReadDataFromStream<RetryBasicData>("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"))
                 .Throws<Exception>()
-                .Returns(ExpectedRetryBasicData);
-            Assert.AreSame(ExpectedRetryBasicData, FileDataWorker.Read<RetryBasicData>(ExpectedRetryBasicData.Id));
+                .ReturnsAsync(ExpectedRetryBasicData);
+            Assert.AreSame(ExpectedRetryBasicData, await FileDataWorker.Read<RetryBasicData>(ExpectedRetryBasicData.Id));
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"),
                 Times.Exactly(2));
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool ExistsReturnsTrue()
+        public async Task<bool> ExistsReturnsTrue()
         {
             MockFileStreamer
                 .Setup(x => x.Exists("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"))
-                .Returns(true);
-            return FileDataWorker.Exists<BasicData>(ExpectedBasicData.Id);
+                .ReturnsAsync(true);
+            return await FileDataWorker.Exists<BasicData>(ExpectedBasicData.Id);
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool ExistsReturnsFalse()
+        public async Task<bool> ExistsReturnsFalse()
         {
             MockFileStreamer
                 .Setup(x => x.Exists("BasicData\\" + ExpectedBasicData.Id + ".data"))
-                .Returns(false);
-            return FileDataWorker.Exists<BasicData>(ExpectedBasicData.Id);
+                .ReturnsAsync(false);
+            return await FileDataWorker.Exists<BasicData>(ExpectedBasicData.Id);
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool DeleteHardDeleteReturnsTrue()
+        public async Task<bool> DeleteHardDeleteReturnsTrue()
         {
             MockFileStreamer
                 .Setup(x => x.Delete("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"))
-                .Returns(true);
-            return FileDataWorker.Delete<BasicData>(ExpectedBasicData.Id);
+                .ReturnsAsync(true);
+            return await FileDataWorker.Delete<BasicData>(ExpectedBasicData.Id);
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool DeleteHardDeleteReturnsFalse()
+        public async Task<bool> DeleteHardDeleteReturnsFalse()
         {
             MockFileStreamer
                 .Setup(x => x.Delete("BasicData\\" + ExpectedBasicData.Id + ".data"))
-                .Returns(false);
-            return FileDataWorker.Delete<BasicData>(ExpectedBasicData.Id);
+                .ReturnsAsync(false);
+            return await FileDataWorker.Delete<BasicData>(ExpectedBasicData.Id);
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool DeleteSoftDeleteReturnsTrue()
+        public async Task<bool> DeleteSoftDeleteReturnsTrue()
         {
             MockFileStreamer
                 .Setup(x => x.SoftDelete("Data\\SoftDeleteData\\" + ExpectedSoftDeleteData.Id + ".data"))
-                .Returns(true);
-            return FileDataWorker.Delete<SoftDeleteData>(ExpectedSoftDeleteData.Id);
+                .ReturnsAsync(true);
+            return await FileDataWorker.Delete<SoftDeleteData>(ExpectedSoftDeleteData.Id);
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool DeleteSoftDeleteReturnsFalse()
+        public async Task<bool> DeleteSoftDeleteReturnsFalse()
         {
             MockFileStreamer
                 .Setup(x => x.SoftDelete("SoftDeleteData\\" + ExpectedSoftDeleteData.Id + ".data"))
-                .Returns(false);
-            return FileDataWorker.Delete<SoftDeleteData>(ExpectedSoftDeleteData.Id);
+                .ReturnsAsync(false);
+            return await FileDataWorker.Delete<SoftDeleteData>(ExpectedSoftDeleteData.Id);
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
-        public bool RestoreSoftDeleteDataReturnsTrue()
+        public async Task<bool> RestoreSoftDeleteDataReturnsTrue()
         {
             MockFileStreamer
                 .Setup(x => x.Undelete("Data\\SoftDeleteData\\" + ExpectedSoftDeleteData.Id + ".data"))
-                .Returns(true);
-            var result = FileDataWorker.Undelete<SoftDeleteData>(ExpectedSoftDeleteData.Id);
+                .ReturnsAsync(true);
+            var result = await FileDataWorker.Undelete<SoftDeleteData>(ExpectedSoftDeleteData.Id);
             MockFileStreamer.Verify(x => x.Undelete("Data\\SoftDeleteData\\" + ExpectedSoftDeleteData.Id + ".data"),
                 Times.Once);
             return result;
         }
 
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
-        public bool RestoreSoftDeleteDataReturnsFalse()
+        public async Task<bool> RestoreSoftDeleteDataReturnsFalse()
         {
             MockFileStreamer
                 .Setup(x => x.Undelete("Data\\SoftDeleteData\\" + ExpectedSoftDeleteData.Id + ".data"))
-                .Returns(false);
-            var result = FileDataWorker.Undelete<SoftDeleteData>(ExpectedSoftDeleteData.Id);
+                .ReturnsAsync(false);
+            var result = await FileDataWorker.Undelete<SoftDeleteData>(ExpectedSoftDeleteData.Id);
             MockFileStreamer.Verify(x => x.Undelete("Data\\SoftDeleteData\\" + ExpectedSoftDeleteData.Id + ".data"),
                 Times.Once);
             return result;
         }
 
         [Test(Author = "PackDB Creator")]
-        public void RollbackWithRetry()
+        public async Task RollbackWithRetry()
         {
             MockFileStreamer
                 .SetupSequence(x => x.GetLockForFile(It.IsAny<string>()))
-                .Returns(false)
-                .Returns(true);
-            FileDataWorker.Rollback(ExpectedBasicData.Id, ExpectedBasicData);
+                .ReturnsAsync(false)
+                .ReturnsAsync(true);
+            await FileDataWorker.Rollback(ExpectedBasicData.Id, ExpectedBasicData);
             MockFileStreamer
                 .Verify(x => x.GetLockForFile(It.IsAny<string>()), Times.Exactly(2));
             MockFileStreamer

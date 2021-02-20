@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using PackDB.Core.Locks;
 using PackDB.Core.MessagePackProxy;
 using PackDB.FileSystem.OS;
@@ -37,74 +38,78 @@ namespace PackDB.FileSystem
             _semaphoreFactory = semaphoreFactory;
         }
 
-        public bool GetLockForFile(string filename)
+        public Task<bool> GetLockForFile(string filename)
         {
             lock (_fileLocks)
             {
                 if (!_fileLocks.ContainsKey(filename)) _fileLocks.Add(filename, _semaphoreFactory.Create(1, 1));
-                return _fileLocks[filename].Wait(_lockWaitTimeout);
+                return Task.FromResult(_fileLocks[filename].Wait(_lockWaitTimeout));
             }
         }
 
-        public void UnlockFile(string filename)
+        public Task UnlockFile(string filename)
         {
             lock (_fileLocks)
             {
-                if (!_fileLocks.ContainsKey(filename)) return;
+                if (!_fileLocks.ContainsKey(filename)) return Task.CompletedTask;
                 _fileLocks[filename].Release();
             }
+            return Task.CompletedTask;
         }
 
-        public bool WriteDataToStream<TDataType>(string filename, TDataType data)
+        public async Task<bool> WriteDataToStream<TDataType>(string filename, TDataType data)
         {
-            if (!_fileStreams.ContainsKey(filename)) _fileStreams.Add(filename, _file.OpenWrite(filename));
-            _messagePackSerializer.Serialize(_fileStreams[filename].GetStream(), data);
+            if (!_fileStreams.ContainsKey(filename)) _fileStreams.Add(filename, await _file.OpenWrite(filename));
+            await _messagePackSerializer.Serialize(_fileStreams[filename].GetStream(), data);
             return true;
         }
 
-        public TDataType ReadDataFromStream<TDataType>(string filename)
+        public async Task<TDataType> ReadDataFromStream<TDataType>(string filename)
         {
-            if (!_fileStreams.ContainsKey(filename)) _fileStreams.Add(filename, _file.OpenRead(filename));
-            var result = _messagePackSerializer.Deserialize<TDataType>(_fileStreams[filename].GetStream());
-            CloseStream(filename);
+            if (!_fileStreams.ContainsKey(filename)) _fileStreams.Add(filename, await _file.OpenRead(filename));
+            var result = await _messagePackSerializer.Deserialize<TDataType>(_fileStreams[filename].GetStream());
+            await CloseStream(filename);
             return result;
         }
 
-        public bool CloseStream(string filename)
+        public async Task<bool> CloseStream(string filename)
         {
             if (!_fileStreams.ContainsKey(filename)) return false;
             _fileStreams[filename].Close();
-            DisposeOfStream(filename);
+            await DisposeOfStream(filename);
             return true;
         }
 
-        public void DisposeOfStream(string filename)
+        public async Task DisposeOfStream(string filename)
         {
             if (!_fileStreams.ContainsKey(filename)) return;
-            _fileStreams[filename].Dispose();
+            await _fileStreams[filename].Dispose();
             _fileStreams.Remove(filename);
         }
 
-        public bool Exists(string filename)
+        public Task<bool> Exists(string filename)
         {
             return _file.Exists(filename);
         }
 
-        public bool Delete(string filename)
+        public async Task<bool> Delete(string filename)
         {
-            _file.Delete(filename);
+            await _file.Delete(filename);
             return true;
         }
 
-        public bool SoftDelete(string filename)
+        public async Task<bool> SoftDelete(string filename)
         {
-            _file.Move(filename, filename + ".deleted");
+            await _file.Move(filename, filename + ".deleted");
             return true;
         }
 
-        public bool Undelete(string filename)
+        public async Task<bool> Undelete(string filename)
         {
-            _file.Move(filename + ".deleted", filename);
+            if (await _file.Exists(filename + ".deleted"))
+            {
+                await _file.Move(filename + ".deleted", filename);
+            }
             return true;
         }
 

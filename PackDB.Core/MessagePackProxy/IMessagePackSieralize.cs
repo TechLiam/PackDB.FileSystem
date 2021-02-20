@@ -1,10 +1,11 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace PackDB.Core.MessagePackProxy
 {
     public interface IMessagePackSerializer
     {
-        void Serialize<TDataType>(Stream stream, TDataType data);
-        TDataType Deserialize<TDataType>(Stream stream);
+        Task Serialize<TDataType>(Stream stream, TDataType data);
+        ValueTask<TDataType> Deserialize<TDataType>(Stream stream);
     }
 }

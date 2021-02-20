@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace PackDB.FileSystem.OS
 {
@@ -23,9 +24,9 @@ namespace PackDB.FileSystem.OS
             _stream.Close();
         }
 
-        public void Dispose()
+        public ValueTask Dispose()
         {
-            _stream.Dispose();
+            return _stream.DisposeAsync();
         }
     }
 }

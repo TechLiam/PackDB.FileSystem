@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using PackDB.Core;
 using PackDB.Core.Data;
 using PackDB.Core.Indexing;
@@ -29,21 +30,24 @@ namespace PackDB.FileSystem.IndexWorker
 
         private string TopLevelDataFolderName { get; }
 
-        public bool IndexExist<TDataType>(string indexName) where TDataType : DataEntity
+        public Task<bool> IndexExist<TDataType>(string indexName) where TDataType : DataEntity
         {
             return FileStreamer.Exists(GetFileName<TDataType>(indexName));
         }
 
-        public IEnumerable<int> GetIdsFromIndex<TDataType, TKeyType>(string indexName, TKeyType indexKey)
+        public async IAsyncEnumerable<int> GetIdsFromIndex<TDataType, TKeyType>(string indexName, TKeyType indexKey)
             where TDataType : DataEntity
         {
-            var index = FileStreamer.ReadDataFromStream<Index<TKeyType>>(GetFileName<TDataType>(indexName));
-            if (index.Keys == null) return new int[0];
-            var key = index.Keys.FirstOrDefault(x => x.Value.Equals(indexKey));
-            return key is null ? new int[0] : key.Ids.ToArray();
+            var index = await FileStreamer.ReadDataFromStream<Index<TKeyType>>(GetFileName<TDataType>(indexName));
+            var key = index.Keys?.FirstOrDefault(x => x.Value.Equals(indexKey));
+            if (key == null) yield break;
+            foreach (var id in key.Ids)
+            {
+                yield return id;
+            }
         }
 
-        public bool Index<TDataType>(TDataType data) where TDataType : DataEntity
+        public async Task<bool> Index<TDataType>(TDataType data) where TDataType : DataEntity
         {
             var indexProperties = typeof(TDataType)
                 .GetProperties()
@@ -58,9 +62,9 @@ namespace PackDB.FileSystem.IndexWorker
                 var indexKey = indexProperty.GetValue(data);
                 var indexFileName = GetFileName<TDataType>(indexName);
                 var hasChanges = false;
-                if (IndexExist<TDataType>(indexName))
+                if (await IndexExist<TDataType>(indexName))
                 {
-                    index = FileStreamer.ReadDataFromStream<Index<object>>(indexFileName);
+                    index = await FileStreamer.ReadDataFromStream<Index<object>>(indexFileName);
                     var otherKeys = index.Keys
                         .Where(x => !x.Value.Equals(indexKey) && x.Ids.Any(y => y == data.Id))
                         .ToArray();
@@ -106,9 +110,9 @@ namespace PackDB.FileSystem.IndexWorker
 
                 if (hasChanges)
                 {
-                    if (FileStreamer.WriteDataToStream(indexFileName, index))
+                    if (await FileStreamer.WriteDataToStream(indexFileName, index))
                     {
-                        if (!FileStreamer.CloseStream(indexFileName)) indexSuccess = false;
+                        if (!await FileStreamer.CloseStream(indexFileName)) indexSuccess = false;
                     }
                     else
                     {
@@ -120,7 +124,7 @@ namespace PackDB.FileSystem.IndexWorker
             return indexSuccess;
         }
 
-        public bool Unindex<TDataType>(TDataType data) where TDataType : DataEntity
+        public async Task<bool> Unindex<TDataType>(TDataType data) where TDataType : DataEntity
         {
             var indexProperties = typeof(TDataType)
                 .GetProperties()
@@ -131,10 +135,10 @@ namespace PackDB.FileSystem.IndexWorker
             foreach (var indexProperty in indexProperties)
             {
                 var indexName = indexProperty.Name;
-                if (IndexExist<TDataType>(indexName))
+                if (await IndexExist<TDataType>(indexName))
                 {
                     var indexFileName = GetFileName<TDataType>(indexName);
-                    var index = FileStreamer.ReadDataFromStream<Index<object>>(indexFileName);
+                    var index = await FileStreamer.ReadDataFromStream<Index<object>>(indexFileName);
                     if (index.Keys is null) continue;
                     var keys = index.Keys
                         .Where(x => x.Ids.Any(y => y == data.Id))
@@ -148,9 +152,9 @@ namespace PackDB.FileSystem.IndexWorker
 
                     if (index.Keys.Any())
                     {
-                        if (FileStreamer.WriteDataToStream(indexFileName, index))
+                        if (await FileStreamer.WriteDataToStream(indexFileName, index))
                         {
-                            if (!FileStreamer.CloseStream(indexFileName)) unindexSuccess = false;
+                            if (!await FileStreamer.CloseStream(indexFileName)) unindexSuccess = false;
                         }
                         else
                         {
@@ -159,7 +163,7 @@ namespace PackDB.FileSystem.IndexWorker
                     }
                     else
                     {
-                        if (!FileStreamer.Delete(indexFileName)) unindexSuccess = false;
+                        if (!await FileStreamer.Delete(indexFileName)) unindexSuccess = false;
                     }
                 }
             }

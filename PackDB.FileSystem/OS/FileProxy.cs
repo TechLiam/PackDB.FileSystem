@@ -1,36 +1,41 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace PackDB.FileSystem.OS
 {
     [ExcludeFromCodeCoverage]
     public class FileProxy : IFile
     {
-        public IStream OpenWrite(string path)
+        public Task<IStream> OpenWrite(string path)
         {
             var directory = path.Substring(0, path.LastIndexOf('\\'));
             Directory.CreateDirectory(directory);
-            return new StreamProxy(File.OpenWrite(path));
+            var stream = new StreamProxy(File.OpenWrite(path)) as IStream;
+            return Task.FromResult(stream);
         }
 
-        public IStream OpenRead(string path)
+        public Task<IStream> OpenRead(string path)
         {
-            return new StreamProxy(File.OpenRead(path));
+            var stream = new StreamProxy(File.OpenRead(path)) as IStream;
+            return Task.FromResult(stream);
         }
 
-        public bool Exists(string path)
+        public Task<bool> Exists(string path)
         {
-            return File.Exists(path);
+            return Task.FromResult(File.Exists(path));
         }
 
-        public void Delete(string path)
+        public Task Delete(string path)
         {
             File.Delete(path);
+            return Task.CompletedTask;
         }
 
-        public void Move(string path, string destination)
+        public Task Move(string path, string destination)
         {
             File.Move(path, destination);
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using PackDB.FileSystem;
 
 namespace IntegrationTestApp
@@ -7,13 +8,13 @@ namespace IntegrationTestApp
     [ExcludeFromCodeCoverage]
     internal class Program
     {
-        private static void Main()
+        private static async Task Main()
         {
             Console.WriteLine("PackDB integration testing stating");
 
             var dataManager = DataManagerFactory.CreateFileSystemDataManager();
 
-            var write = dataManager.Write(new TestData
+            var write = await dataManager.Write(new TestData
             {
                 Id = 1,
                 Firstname = "Test",
@@ -22,16 +23,19 @@ namespace IntegrationTestApp
             });
             Console.WriteLine(write ? "Saved data successfully" : "Save data failed");
 
-            var read = dataManager.Read<TestData>(1);
-            Console.WriteLine("Read data:");
-            Console.WriteLine($"Id: {read.Id}");
-            Console.WriteLine($"Name: {read.Firstname} {read.Lastname}");
-            Console.WriteLine($"Year of birth: {read.YearOfBirth}");
+            var read = await dataManager.Read<TestData>(1);
+            if (read != null)
+            {
+                Console.WriteLine("Read data:");
+                Console.WriteLine($"Id: {read.Id}");
+                Console.WriteLine($"Name: {read.Firstname} {read.Lastname}");
+                Console.WriteLine($"Year of birth: {read.YearOfBirth}");
+            }
 
-            var delete = dataManager.Delete<TestData>(1);
+            var delete = await dataManager.Delete<TestData>(1);
             Console.WriteLine(delete ? "Deleted the data" : "Failed to delete data");
 
-            write = dataManager.Write(new TestSoftDeleteData
+            write = await dataManager.Write(new TestSoftDeleteData
             {
                 Id = 2,
                 Firstname = "Test",
@@ -40,12 +44,12 @@ namespace IntegrationTestApp
             });
             Console.WriteLine(write ? "Saved data successfully" : "Save data failed");
 
-            delete = dataManager.Delete<TestSoftDeleteData>(2);
+            delete = await dataManager.Delete<TestSoftDeleteData>(2);
             Console.WriteLine(delete ? "Deleted the data" : "Failed to delete data");
-            var restore = dataManager.Restore<TestSoftDeleteData>(2);
+            var restore = await dataManager.Restore<TestSoftDeleteData>(2);
             Console.WriteLine(restore ? "Restored the data" : "Failed to restore data");
 
-            write = dataManager.Write(new TestIndexData
+            write = await dataManager.Write(new TestIndexData
             {
                 Id = 2,
                 Firstname = "Test",
@@ -57,7 +61,7 @@ namespace IntegrationTestApp
 
             var indexData = dataManager.ReadIndex<TestIndexData, string>("0123456789", x => x.PhoneNumber);
             Console.WriteLine("Read data with index");
-            foreach (var data in indexData)
+            await foreach (var data in indexData)
             {
                 Console.WriteLine($"Id: {data.Id}");
                 Console.WriteLine($"Name: {data.Firstname} {data.Lastname}");
@@ -65,7 +69,7 @@ namespace IntegrationTestApp
                 Console.WriteLine($"Phone number: {data.PhoneNumber}");
             }
 
-            dataManager.Delete<TestIndexData>(2);
+            await dataManager.Delete<TestIndexData>(2);
 
             var auditData = new TestAuditData
             {
@@ -75,10 +79,10 @@ namespace IntegrationTestApp
                 YearOfBirth = 1985
             };
 
-            write = dataManager.Write(auditData);
+            write = await dataManager.Write(auditData);
             Console.WriteLine(write ? "Saved data successfully" : "Save data failed");
 
-            write = dataManager.Write(auditData);
+            write = await dataManager.Write(auditData);
             Console.WriteLine(write ? "Saved data successfully" : "Save data failed");
 
             Console.WriteLine("PackDB integration testing finished");

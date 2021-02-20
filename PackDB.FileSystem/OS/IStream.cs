@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace PackDB.FileSystem.OS
 {
@@ -6,6 +7,6 @@ namespace PackDB.FileSystem.OS
     {
         Stream GetStream();
         void Close();
-        void Dispose();
+        ValueTask Dispose();
     }
 }
