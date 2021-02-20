@@ -161,10 +161,7 @@ namespace PackDB.Core.Tests
         public async Task ReadMultipleWhenThereNoData()
         {
             var results = DataManager.Read<BasicEntity>(new[] {Randomizer.Next(), Randomizer.Next()});
-            await foreach (var result in results)
-            {
-                Assert.IsFalse(result != null);
-            }
+            await foreach (var result in results) Assert.IsFalse(result != null);
         }
 
         [Test(Author = "PackDB Creator")]
@@ -172,10 +169,7 @@ namespace PackDB.Core.Tests
         {
             var data = DataManager.Read<BasicEntity>(new[] {ExpectedBasicEntity.Id, ExpectedIndexedEntity.Id});
             var results = new List<BasicEntity>();
-            await foreach (var d in data)
-            {
-                results.Add(d);
-            }
+            await foreach (var d in data) results.Add(d);
             Assert.AreEqual(2, results.Count());
             Assert.AreSame(ExpectedBasicEntity, results.ElementAt(0));
             Assert.AreSame(ExpectedIndexedEntity, results.ElementAt(1));
@@ -186,10 +180,7 @@ namespace PackDB.Core.Tests
         {
             var data = DataManager.ReadIndex<BasicEntity, string>(ExpectedBasicEntity.Value1, x => x.Value1);
             var result = new List<BasicEntity>();
-            await foreach (var d in data)
-            {
-                result.Add(d);
-            }
+            await foreach (var d in data) result.Add(d);
             Assert.IsEmpty(result);
             MockIndexer.Verify(x => x.IndexExist<BasicEntity>(It.IsAny<string>()), Times.Never);
         }
@@ -200,10 +191,7 @@ namespace PackDB.Core.Tests
             MockIndexer.Setup(x => x.IndexExist<IndexedEntity>("IndexedValue")).ReturnsAsync(false);
             var data = DataManager.ReadIndex<IndexedEntity, string>(ExpectedBasicEntity.Value1, x => x.IndexedValue);
             var result = new List<BasicEntity>();
-            await foreach (var d in data)
-            {
-                result.Add(d);
-            }
+            await foreach (var d in data) result.Add(d);
             Assert.IsEmpty(result);
         }
 
@@ -214,12 +202,10 @@ namespace PackDB.Core.Tests
                 .Setup(
                     x => x.GetIdsFromIndex<IndexedEntity, string>("IndexedValue", ExpectedIndexedEntity.IndexedValue))
                 .Returns(EmptyIndexEntityList);
-            var data = DataManager.ReadIndex<IndexedEntity, string>(ExpectedIndexedEntity.IndexedValue, x => x.IndexedValue);
+            var data = DataManager.ReadIndex<IndexedEntity, string>(ExpectedIndexedEntity.IndexedValue,
+                x => x.IndexedValue);
             var results = new List<IndexedEntity>();
-            await foreach (var d in data)
-            {
-                results.Add(d);
-            }
+            await foreach (var d in data) results.Add(d);
             Assert.IsFalse(results.Any());
         }
 
@@ -230,24 +216,20 @@ namespace PackDB.Core.Tests
                 .Setup(
                     x => x.GetIdsFromIndex<IndexedEntity, string>("IndexedValue", ExpectedIndexedEntity.IndexedValue))
                 .Returns(RandomIndexEntityList);
-            var data = DataManager.ReadIndex<IndexedEntity, string>(ExpectedIndexedEntity.IndexedValue, x => x.IndexedValue);
+            var data = DataManager.ReadIndex<IndexedEntity, string>(ExpectedIndexedEntity.IndexedValue,
+                x => x.IndexedValue);
             var results = new List<IndexedEntity>();
-            await foreach (var d in data)
-            {
-                results.Add(d);
-            }
+            await foreach (var d in data) results.Add(d);
             Assert.IsFalse(results.Any(x => x != null));
         }
 
         [Test(Author = "PackDB Creator")]
         public async Task ReadWhenIndexHasAValueAndThereIsData()
         {
-            var data = DataManager.ReadIndex<IndexedEntity, string>(ExpectedIndexedEntity.IndexedValue, x => x.IndexedValue);
+            var data = DataManager.ReadIndex<IndexedEntity, string>(ExpectedIndexedEntity.IndexedValue,
+                x => x.IndexedValue);
             var result = new List<IndexedEntity>();
-            await foreach (var d in data)
-            {
-                result.Add(d);
-            }
+            await foreach (var d in data) result.Add(d);
             Assert.AreEqual(result.Count(), 1);
             Assert.AreSame(ExpectedIndexedEntity, result.ElementAt(0));
         }

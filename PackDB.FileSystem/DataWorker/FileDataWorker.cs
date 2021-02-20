@@ -15,7 +15,7 @@ namespace PackDB.FileSystem.DataWorker
         }
 
         [ExcludeFromCodeCoverage]
-        public FileDataWorker(string dataFolder) : this(new FileStreamer(),dataFolder)
+        public FileDataWorker(string dataFolder) : this(new FileStreamer(), dataFolder)
         {
         }
 
@@ -28,7 +28,7 @@ namespace PackDB.FileSystem.DataWorker
         private IFileStreamer FileStreamer { get; }
 
         private string TopLevelDataFolderName { get; }
-        
+
         public async Task<bool> Write<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
             var filename = GetFileName<TDataType>(id);
@@ -129,7 +129,9 @@ namespace PackDB.FileSystem.DataWorker
 
         public Task<bool> Undelete<TDataType>(int id) where TDataType : DataEntity
         {
-            return IsSoftDelete<TDataType>() ? FileStreamer.Undelete(GetFileName<TDataType>(id)) : Task.FromResult(false);
+            return IsSoftDelete<TDataType>()
+                ? FileStreamer.Undelete(GetFileName<TDataType>(id))
+                : Task.FromResult(false);
         }
 
         public async Task Rollback<TDataType>(int id, TDataType data) where TDataType : DataEntity

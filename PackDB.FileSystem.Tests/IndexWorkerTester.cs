@@ -136,10 +136,7 @@ namespace PackDB.FileSystem.Tests
                 .ReturnsAsync(new Index<string>());
             var data = FileIndexWorker.GetIdsFromIndex<IndexableData, string>("IndexValue1", "Unit test");
             var result = new List<int>();
-            await foreach (var d in data)
-            {
-                result.Add(d);
-            }
+            await foreach (var d in data) result.Add(d);
             Assert.IsEmpty(result);
         }
 
@@ -154,10 +151,7 @@ namespace PackDB.FileSystem.Tests
                 });
             var data = FileIndexWorker.GetIdsFromIndex<IndexableData, string>("IndexValue1", "Unit test");
             var result = new List<int>();
-            await foreach (var d in data)
-            {
-                result.Add(d);
-            }
+            await foreach (var d in data) result.Add(d);
             Assert.IsEmpty(result);
         }
 
@@ -178,10 +172,7 @@ namespace PackDB.FileSystem.Tests
                 });
             var data = FileIndexWorker.GetIdsFromIndex<IndexableData, string>("IndexValue1", "Unit test");
             var result = new List<int>();
-            await foreach (var d in data)
-            {
-                result.Add(d);
-            }
+            await foreach (var d in data) result.Add(d);
             Assert.IsEmpty(result);
         }
 
@@ -203,10 +194,7 @@ namespace PackDB.FileSystem.Tests
                 });
             var data = FileIndexWorker.GetIdsFromIndex<IndexableData, string>("IndexValue1", IndexKey);
             var result = new List<int>();
-            await foreach (var d in data)
-            {
-                result.Add(d);
-            }
+            await foreach (var d in data) result.Add(d);
             Assert.IsEmpty(result);
         }
 
@@ -215,10 +203,7 @@ namespace PackDB.FileSystem.Tests
         {
             var data = FileIndexWorker.GetIdsFromIndex<IndexableData, string>("IndexValue1", IndexKey);
             var result = new List<int>();
-            await foreach (var d in data)
-            {
-                result.Add(d);
-            }
+            await foreach (var d in data) result.Add(d);
             Assert.AreEqual(ExpectedIds.Count(), result.Count());
             for (var i = 0; i < ExpectedIds.Count(); i++) Assert.IsTrue(result.Contains(ExpectedIds[i]));
         }

@@ -54,6 +54,7 @@ namespace PackDB.FileSystem
                 if (!_fileLocks.ContainsKey(filename)) return Task.CompletedTask;
                 _fileLocks[filename].Release();
             }
+
             return Task.CompletedTask;
         }
 
@@ -106,10 +107,7 @@ namespace PackDB.FileSystem
 
         public async Task<bool> Undelete(string filename)
         {
-            if (await _file.Exists(filename + ".deleted"))
-            {
-                await _file.Move(filename + ".deleted", filename);
-            }
+            if (await _file.Exists(filename + ".deleted")) await _file.Move(filename + ".deleted", filename);
             return true;
         }
 

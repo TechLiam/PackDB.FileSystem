@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace PackDB.Core.Locks
+﻿namespace PackDB.Core.Locks
 {
     public interface ISemaphoreFactory
     {

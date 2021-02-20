@@ -16,7 +16,7 @@ namespace PackDB.FileSystem.IndexWorker
         }
 
         [ExcludeFromCodeCoverage]
-        public FileIndexWorker(string dataPath) : this(new FileStreamer(),dataPath)
+        public FileIndexWorker(string dataPath) : this(new FileStreamer(), dataPath)
         {
         }
 
@@ -41,10 +41,7 @@ namespace PackDB.FileSystem.IndexWorker
             var index = await FileStreamer.ReadDataFromStream<Index<TKeyType>>(GetFileName<TDataType>(indexName));
             var key = index.Keys?.FirstOrDefault(x => x.Value.Equals(indexKey));
             if (key == null) yield break;
-            foreach (var id in key.Ids)
-            {
-                yield return id;
-            }
+            foreach (var id in key.Ids) yield return id;
         }
 
         public async Task<bool> Index<TDataType>(TDataType data) where TDataType : DataEntity

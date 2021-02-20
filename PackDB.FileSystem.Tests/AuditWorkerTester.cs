@@ -103,7 +103,8 @@ namespace PackDB.FileSystem.Tests
                 .Setup(x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog))
                 .ReturnsAsync(false);
             var result = await methodUnderTest.Invoke();
-            MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), lockFile);
+            MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
+                lockFile);
             MockFileStreamer.Verify(
                 x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog),
                 retryAttempts);
@@ -120,7 +121,8 @@ namespace PackDB.FileSystem.Tests
                 .Setup(x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog))
                 .Throws<Exception>();
             var result = await methodUnderTest.Invoke();
-            MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), lockFile);
+            MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
+                lockFile);
             MockFileStreamer.Verify(
                 x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog),
                 retryAttempts);
@@ -141,7 +143,8 @@ namespace PackDB.FileSystem.Tests
             MockFileStreamer.Verify(
                 x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", It.IsAny<AuditLog>()),
                 Times.Never);
-            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), retryAttempts);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
+                retryAttempts);
             MockAuditGenerator.Verify(auditGenerator, Times.Exactly(3));
             return result;
         }
@@ -157,7 +160,8 @@ namespace PackDB.FileSystem.Tests
             MockFileStreamer.Verify(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
                 getFileLockTimes);
             MockFileStreamer.Verify(
-                x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog), Times.Once);
+                x => x.WriteDataToStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit", expectedAuditLog),
+                Times.Once);
             MockFileStreamer.Verify(x => x.UnlockFile(It.IsAny<string>()), unlockFile);
             MockAuditGenerator.Verify(auditGenerator, Times.Once);
             return result;
@@ -181,7 +185,8 @@ namespace PackDB.FileSystem.Tests
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public async Task<bool> CreationEventWriteDataToStreamFailsDueToException()
         {
-            return await WriteDataToStreamFailsDueToException(async () => await FileAuditWorker.CreationEvent(ExpectedData),
+            return await WriteDataToStreamFailsDueToException(
+                async () => await FileAuditWorker.CreationEvent(ExpectedData),
                 x => x.NewLog(It.IsAny<AuditableData>()),
                 CreateExpectedAuditLog, Times.Exactly(3), Times.Exactly(3));
         }
@@ -204,7 +209,8 @@ namespace PackDB.FileSystem.Tests
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public async Task<bool> UpdateEventGetLockForFileFails()
         {
-            return await GetLockForFileFails(async () => await FileAuditWorker.UpdateEvent(ExpectedData, OldExpectedData),
+            return await GetLockForFileFails(
+                async () => await FileAuditWorker.UpdateEvent(ExpectedData, OldExpectedData),
                 x => x.UpdateLog(It.IsAny<AuditableData>(), It.IsAny<AuditableData>(), It.IsAny<AuditLog>()),
                 Times.Exactly(6));
         }
@@ -212,7 +218,8 @@ namespace PackDB.FileSystem.Tests
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public async Task<bool> UpdateEventWriteDataToStreamFails()
         {
-            return await WriteDataToStreamFails(async () => await FileAuditWorker.UpdateEvent(ExpectedData, OldExpectedData),
+            return await WriteDataToStreamFails(
+                async () => await FileAuditWorker.UpdateEvent(ExpectedData, OldExpectedData),
                 x => x.UpdateLog(It.IsAny<AuditableData>(), It.IsAny<AuditableData>(), It.IsAny<AuditLog>()),
                 UpdateExpectedAuditLog, Times.Exactly(3), Times.Exactly(4));
         }
@@ -229,7 +236,8 @@ namespace PackDB.FileSystem.Tests
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public async Task<bool> UpdateEventGenerateAuditFailsDueToException()
         {
-            return await GenerateAuditFailsDueToException(async () => await FileAuditWorker.UpdateEvent(ExpectedData, OldExpectedData),
+            return await GenerateAuditFailsDueToException(
+                async () => await FileAuditWorker.UpdateEvent(ExpectedData, OldExpectedData),
                 x => x.UpdateLog(It.IsAny<AuditableData>(), It.IsAny<AuditableData>(), It.IsAny<AuditLog>()),
                 Times.Exactly(4));
         }
@@ -260,7 +268,8 @@ namespace PackDB.FileSystem.Tests
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public async Task<bool> DeleteEventWriteDataToStreamFailsDueToException()
         {
-            return await WriteDataToStreamFailsDueToException(async () => await FileAuditWorker.DeleteEvent(ExpectedData),
+            return await WriteDataToStreamFailsDueToException(
+                async () => await FileAuditWorker.DeleteEvent(ExpectedData),
                 x => x.DeleteLog(It.IsAny<AuditableData>(), It.IsAny<AuditLog>()),
                 DeleteExpectedAuditLog, Times.Exactly(3), Times.Exactly(4));
         }
@@ -298,7 +307,8 @@ namespace PackDB.FileSystem.Tests
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public async Task<bool> UndeleteEventWriteDataToStreamFailsDueToException()
         {
-            return await WriteDataToStreamFailsDueToException(async () => await FileAuditWorker.UndeleteEvent(ExpectedData),
+            return await WriteDataToStreamFailsDueToException(
+                async () => await FileAuditWorker.UndeleteEvent(ExpectedData),
                 x => x.UndeleteLog(It.IsAny<AuditableData>(), It.IsAny<AuditLog>()),
                 UndeleteExpectedAuditLog, Times.Exactly(3), Times.Exactly(4));
         }
@@ -336,7 +346,8 @@ namespace PackDB.FileSystem.Tests
         [Test(Author = "PackDB Creator", ExpectedResult = false)]
         public async Task<bool> RollbackEventWriteDataToStreamFailsDueToException()
         {
-            return await WriteDataToStreamFailsDueToException(async () => await FileAuditWorker.RollbackEvent(ExpectedData),
+            return await WriteDataToStreamFailsDueToException(
+                async () => await FileAuditWorker.RollbackEvent(ExpectedData),
                 x => x.RollbackLog(It.IsAny<AuditableData>(), It.IsAny<AuditLog>()),
                 RollbackExpectedAuditLog, Times.Exactly(3), Times.Exactly(4));
         }
@@ -371,8 +382,10 @@ namespace PackDB.FileSystem.Tests
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
                 .ReturnsAsync(false);
             var result = await FileAuditWorker.CommitEvents(ExpectedData);
-            MockFileStreamer.Verify(x => x.DisposeOfStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
-            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
+            MockFileStreamer.Verify(x => x.DisposeOfStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
+                Times.Once);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
+                Times.Once);
             return result;
         }
 
@@ -383,8 +396,10 @@ namespace PackDB.FileSystem.Tests
                 .Setup(x => x.CloseStream(It.IsAny<string>()))
                 .Throws<Exception>();
             var result = await FileAuditWorker.CommitEvents(ExpectedData);
-            MockFileStreamer.Verify(x => x.DisposeOfStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
-            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
+            MockFileStreamer.Verify(x => x.DisposeOfStream("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
+                Times.Once);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
+                Times.Once);
             return result;
         }
 
@@ -393,7 +408,8 @@ namespace PackDB.FileSystem.Tests
         {
             var result = await FileAuditWorker.CommitEvents(ExpectedData);
             MockFileStreamer.Verify(x => x.DisposeOfStream(It.IsAny<string>()), Times.Never);
-            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"), Times.Once);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
+                Times.Once);
             return result;
         }
 

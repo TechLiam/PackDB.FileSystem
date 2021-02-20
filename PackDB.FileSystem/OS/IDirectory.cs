@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace PackDB.FileSystem.OS
+﻿namespace PackDB.FileSystem.OS
 {
     public interface IDirectory
     {

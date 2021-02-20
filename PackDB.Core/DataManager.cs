@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using PackDB.Core.Auditing;
@@ -30,13 +29,11 @@ namespace PackDB.Core
 
         public async IAsyncEnumerable<TDataType> Read<TDataType>(IEnumerable<int> ids) where TDataType : DataEntity
         {
-            foreach (var id in ids)
-            {
-                yield return await Read<TDataType>(id);
-            }
+            foreach (var id in ids) yield return await Read<TDataType>(id);
         }
 
-        public async IAsyncEnumerable<TDataType> ReadIndex<TDataType, TKeyType>(TKeyType key, Expression<Func<TDataType, string>> indexProperty) where TDataType : DataEntity
+        public async IAsyncEnumerable<TDataType> ReadIndex<TDataType, TKeyType>(TKeyType key,
+            Expression<Func<TDataType, string>> indexProperty) where TDataType : DataEntity
         {
             var indexMember = ((MemberExpression) indexProperty.Body).Member;
             if (indexMember.IsDefined(typeof(IndexAttribute), true))
@@ -45,10 +42,7 @@ namespace PackDB.Core
                 if (await IndexWorker.IndexExist<TDataType>(indexName))
                 {
                     var ids = IndexWorker.GetIdsFromIndex<TDataType, TKeyType>(indexName, key);
-                    await foreach (var id in ids)
-                    {
-                        yield return await Read<TDataType>(id);
-                    }
+                    await foreach (var id in ids) yield return await Read<TDataType>(id);
                 }
             }
         }

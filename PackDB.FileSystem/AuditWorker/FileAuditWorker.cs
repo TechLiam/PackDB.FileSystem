@@ -15,31 +15,34 @@ namespace PackDB.FileSystem.AuditWorker
         }
 
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker(IFileStreamer fileStreamer) : this(fileStreamer,new AuditGenerator())
+        public FileAuditWorker(IFileStreamer fileStreamer) : this(fileStreamer, new AuditGenerator())
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker(IAuditGenerator auditGenerator) : this(new FileStreamer(),auditGenerator)
+        public FileAuditWorker(IAuditGenerator auditGenerator) : this(new FileStreamer(), auditGenerator)
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker(string dataFolder) : this(new FileStreamer(),new AuditGenerator(), dataFolder)
+        public FileAuditWorker(string dataFolder) : this(new FileStreamer(), new AuditGenerator(), dataFolder)
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker(IFileStreamer fileStreamer, string dataFolder) : this(fileStreamer, new AuditGenerator(), dataFolder)
-        {
-        }
-        
-        [ExcludeFromCodeCoverage]
-        public FileAuditWorker(IAuditGenerator auditGenerator, string dataFolder) : this(new FileStreamer(), auditGenerator, dataFolder)
+        public FileAuditWorker(IFileStreamer fileStreamer, string dataFolder) : this(fileStreamer, new AuditGenerator(),
+            dataFolder)
         {
         }
 
-        public FileAuditWorker(IFileStreamer fileStreamer, IAuditGenerator auditGenerator, string dataFolder = FileSystemConstants.DataFolder)
+        [ExcludeFromCodeCoverage]
+        public FileAuditWorker(IAuditGenerator auditGenerator, string dataFolder) : this(new FileStreamer(),
+            auditGenerator, dataFolder)
+        {
+        }
+
+        public FileAuditWorker(IFileStreamer fileStreamer, IAuditGenerator auditGenerator,
+            string dataFolder = FileSystemConstants.DataFolder)
         {
             FileStreamer = fileStreamer;
             AuditGenerator = auditGenerator;
@@ -56,7 +59,8 @@ namespace PackDB.FileSystem.AuditWorker
                 () => AuditGenerator.NewLog(data));
         }
 
-        public async Task<bool> UpdateEvent<TDataType>(TDataType newData, TDataType oldData) where TDataType : DataEntity
+        public async Task<bool> UpdateEvent<TDataType>(TDataType newData, TDataType oldData)
+            where TDataType : DataEntity
         {
             var currentLog = await ReadAllEvents<TDataType>(newData.Id);
             return await WriteEvent(GetFileName<TDataType>(newData.Id), MaxAttempts<TDataType>(),
