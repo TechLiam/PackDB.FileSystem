@@ -552,6 +552,22 @@ namespace PackDB.FileSystem.Tests
                 .Verify(x => x.CloseStream(It.IsAny<string>()), Times.Once);
         }
 
+        [Test(Author = "PackDB Creator")]
+        public async Task RollbackWithRetryForSoftDelete()
+        {
+            MockFileStreamer
+                .SetupSequence(x => x.Undelete(It.IsAny<string>()))
+                .ReturnsAsync(false)
+                .ReturnsAsync(true);
+            await FileDataWorker.Rollback(ExpectedSoftDeleteData.Id, ExpectedSoftDeleteData);
+            MockFileStreamer
+                .Verify(x => x.Undelete(It.IsAny<string>()), Times.Exactly(2));
+            MockFileStreamer
+                .Verify(x => x.GetLockForFile(It.IsAny<string>()), Times.Never);
+            MockFileStreamer
+                .Verify(x => x.CloseStream(It.IsAny<string>()), Times.Never);
+        }
+
         [Test(Author = "PackDB Creator", ExpectedResult = 1)]
         public int NextIdWhenThereNoFiles()
         {

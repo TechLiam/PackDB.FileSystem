@@ -136,6 +136,13 @@ namespace PackDB.FileSystem.DataWorker
 
         public async Task Rollback<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
+            if (IsSoftDelete<TDataType>())
+            {
+                while (!await FileStreamer.Undelete(GetFileName<TDataType>(id)))
+                {
+                }
+                return;
+            }
             while (!await WriteAndCommit(id, data))
             {
             }

@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <PackageReference Include="MessagePack" Version="2.2.85" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-preview.1.21102.12" />
     </ItemGroup>
 
 </Project>

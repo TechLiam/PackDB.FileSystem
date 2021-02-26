@@ -8,6 +8,7 @@ using NUnit.Framework.Internal;
 using PackDB.Core.Auditing;
 using PackDB.Core.Data;
 using PackDB.Core.Indexing;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace PackDB.Core.Tests
 {
@@ -117,7 +118,9 @@ namespace PackDB.Core.Tests
                 .Setup(x => x.CommitEvents(ExpectedAuditedEntity))
                 .ReturnsAsync(true);
 
-            DataManager = new DataManager(MockDataStream.Object, MockIndexer.Object, MockAudit.Object);
+            MockLogger = new Mock<ILogger>();
+            
+            DataManager = new DataManager(MockDataStream.Object, MockIndexer.Object, MockAudit.Object, MockLogger.Object);
         }
 
         private async IAsyncEnumerable<int> ExpectedIndexEntityList()
@@ -144,6 +147,7 @@ namespace PackDB.Core.Tests
         private Mock<IDataWorker> MockDataStream { get; set; }
         private Mock<IIndexWorker> MockIndexer { get; set; }
         private Mock<IAuditWorker> MockAudit { get; set; }
+        private Mock<Microsoft.Extensions.Logging.ILogger> MockLogger { get; set; }
 
         [Test(Author = "PackDB Creator")]
         public async Task ReadWhenThereNoData()
@@ -623,7 +627,7 @@ namespace PackDB.Core.Tests
                 .ReturnsAsync(false);
             var result = await DataManager.Delete<AuditedEntity>(ExpectedAuditedEntity.Id);
             MockDataStream
-                .Verify(x => x.Undelete<AuditedEntity>(ExpectedAuditedEntity.Id), Times.Once);
+                .Verify(x => x.Rollback<AuditedEntity>(ExpectedAuditedEntity.Id, ExpectedAuditedEntity), Times.Once);
             return result;
         }
 
@@ -635,7 +639,7 @@ namespace PackDB.Core.Tests
                 .ReturnsAsync(false);
             var result = await DataManager.Delete<AuditedEntity>(ExpectedAuditedEntity.Id);
             MockDataStream
-                .Verify(x => x.Undelete<AuditedEntity>(ExpectedAuditedEntity.Id), Times.Once);
+                .Verify(x => x.Rollback<AuditedEntity>(ExpectedAuditedEntity.Id,ExpectedAuditedEntity), Times.Once);
             MockAudit
                 .Verify(x => x.RollbackEvent(ExpectedAuditedEntity), Times.Once);
             return result;
