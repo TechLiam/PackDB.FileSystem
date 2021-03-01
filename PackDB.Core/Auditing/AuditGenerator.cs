@@ -1,12 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using PackDB.Core.Data;
 
 namespace PackDB.Core.Auditing
 {
     public class AuditGenerator : IAuditGenerator
     {
+        private ILogger _logger;
+
+        public AuditGenerator(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public AuditLog NewLog<TDataType>(TDataType data) where TDataType : DataEntity
         {
             var properties = typeof(TDataType).GetProperties();

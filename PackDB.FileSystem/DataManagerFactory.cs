@@ -19,11 +19,12 @@ namespace PackDB.FileSystem
         [ExcludeFromCodeCoverage]
         public static DataManager CreateFileSystemDataManager(string dataFolder = FileSystemConstants.DataFolder, ILogger logger = null)
         {
+            logger ??= new EmptyLogger();
             return new DataManager(
-                new FileDataWorker(dataFolder),
-                new FileIndexWorker(dataFolder),
-                new FileAuditWorker(dataFolder),
-                logger ?? new EmptyLogger()
+                new FileDataWorker(dataFolder,logger),
+                new FileIndexWorker(dataFolder,logger),
+                new FileAuditWorker(dataFolder,logger),
+                logger
             );
         }
     }

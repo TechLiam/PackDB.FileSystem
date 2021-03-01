@@ -18,7 +18,7 @@ namespace IntegrationTestApp
             Log.Logger = new LoggerConfiguration()
                 .Enrich.With<RemovePropertiesEnricher>()
                 .WriteTo.Console(LogEventLevel.Verbose,"{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}]{NewLine}\tScope:\t\t{Scope}{NewLine}\tMessage:\t{Message}{NewLine}\tProperties:\t{Properties}{NewLine}\tException:\t{Exception}{NewLine}")
-                .MinimumLevel.Warning()
+                .MinimumLevel.Verbose()
                 .CreateLogger();
             
             var serviceCollection = new ServiceCollection();

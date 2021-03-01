@@ -281,7 +281,7 @@ namespace PackDB.Core
 
         public int GetNextId<TDataType>() where TDataType : DataEntity
         {
-            using (Logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(DataManager), "getting next id", typeof(TDataType).Name))
+            using (Logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(DataManager), "getting next id", typeof(TDataType).Name))
             {
                 Logger.LogTrace("Getting next id from store");
                 var id = DataStreamer.NextId<TDataType>();

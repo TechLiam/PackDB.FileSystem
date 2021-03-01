@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using PackDB.Core.Auditing;
 using PackDB.Core.Data;
 
@@ -10,45 +11,45 @@ namespace PackDB.FileSystem.AuditWorker
     public class FileAuditWorker : IFileAuditWorker
     {
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker() : this(new FileStreamer())
+        public FileAuditWorker(ILogger logger) : this(new FileStreamer(logger), logger)
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker(IFileStreamer fileStreamer) : this(fileStreamer, new AuditGenerator())
+        public FileAuditWorker(IFileStreamer fileStreamer, ILogger logger) : this(fileStreamer, new AuditGenerator(logger), logger)
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker(IAuditGenerator auditGenerator) : this(new FileStreamer(), auditGenerator)
+        public FileAuditWorker(IAuditGenerator auditGenerator, ILogger logger) : this(new FileStreamer(logger), auditGenerator, logger)
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker(string dataFolder) : this(new FileStreamer(), new AuditGenerator(), dataFolder)
+        public FileAuditWorker(string dataFolder, ILogger logger) : this(new FileStreamer(logger), new AuditGenerator(logger), logger, dataFolder)
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker(IFileStreamer fileStreamer, string dataFolder) : this(fileStreamer, new AuditGenerator(),
-            dataFolder)
+        public FileAuditWorker(IFileStreamer fileStreamer, string dataFolder, ILogger logger) : this(fileStreamer, new AuditGenerator(logger), logger, dataFolder)
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileAuditWorker(IAuditGenerator auditGenerator, string dataFolder) : this(new FileStreamer(),
-            auditGenerator, dataFolder)
+        public FileAuditWorker(IAuditGenerator auditGenerator, string dataFolder, ILogger logger) : this(new FileStreamer(logger),
+            auditGenerator, logger, dataFolder)
         {
         }
 
-        public FileAuditWorker(IFileStreamer fileStreamer, IAuditGenerator auditGenerator,
-            string dataFolder = FileSystemConstants.DataFolder)
+        public FileAuditWorker(IFileStreamer fileStreamer, IAuditGenerator auditGenerator, ILogger logger, string dataFolder = FileSystemConstants.DataFolder)
         {
             FileStreamer = fileStreamer;
             AuditGenerator = auditGenerator;
+            _logger = logger;
             TopLevelDataFolderName = dataFolder;
         }
 
+        private ILogger _logger;
         private IFileStreamer FileStreamer { get; }
         private IAuditGenerator AuditGenerator { get; }
         private string TopLevelDataFolderName { get; }

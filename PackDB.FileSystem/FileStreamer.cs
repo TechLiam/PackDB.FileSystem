@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using PackDB.Core.Locks;
 using PackDB.Core.MessagePackProxy;
 using PackDB.FileSystem.OS;
@@ -13,6 +14,7 @@ namespace PackDB.FileSystem
     {
         private readonly IDirectory _directory;
         private readonly IFile _file;
+        private ILogger _logger;
 
         private readonly IDictionary<string, ISemaphore> _fileLocks = new Dictionary<string, ISemaphore>();
         private readonly IDictionary<string, IStream> _fileStreams = new Dictionary<string, IStream>();
@@ -21,8 +23,9 @@ namespace PackDB.FileSystem
         private readonly ISemaphoreFactory _semaphoreFactory;
 
         [ExcludeFromCodeCoverage]
-        public FileStreamer()
+        public FileStreamer(ILogger logger)
         {
+            _logger = logger;
             _messagePackSerializer = new MessagePackSerializer();
             _file = new FileProxy();
             _directory = new DirectoryProxy();
@@ -30,11 +33,12 @@ namespace PackDB.FileSystem
         }
 
         public FileStreamer(IMessagePackSerializer messagePackSerializer, IFile file,
-            ISemaphoreFactory semaphoreFactory, IDirectory directory)
+            ISemaphoreFactory semaphoreFactory, IDirectory directory, ILogger logger)
         {
             _messagePackSerializer = messagePackSerializer;
             _file = file;
             _directory = directory;
+            _logger = logger;
             _semaphoreFactory = semaphoreFactory;
         }
 
