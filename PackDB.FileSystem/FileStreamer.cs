@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using PackDB.Core;
 using PackDB.Core.Locks;
 using PackDB.Core.MessagePackProxy;
 using PackDB.FileSystem.OS;
@@ -22,24 +23,26 @@ namespace PackDB.FileSystem
         private readonly IMessagePackSerializer _messagePackSerializer;
         private readonly ISemaphoreFactory _semaphoreFactory;
 
-        [ExcludeFromCodeCoverage]
-        public FileStreamer(ILogger logger)
+        public FileStreamer() : this(new EmptyLogger())
         {
-            _logger = logger;
-            _messagePackSerializer = new MessagePackSerializer();
-            _file = new FileProxy();
-            _directory = new DirectoryProxy();
-            _semaphoreFactory = new SemaphoreFactory();
+        }
+        
+        [ExcludeFromCodeCoverage]
+        public FileStreamer(ILogger logger) : this(new MessagePackSerializer(),new FileProxy(), new SemaphoreFactory(), new DirectoryProxy(), logger)
+        {
         }
 
-        public FileStreamer(IMessagePackSerializer messagePackSerializer, IFile file,
-            ISemaphoreFactory semaphoreFactory, IDirectory directory, ILogger logger)
+        public FileStreamer(IMessagePackSerializer messagePackSerializer, IFile file, ISemaphoreFactory semaphoreFactory, IDirectory directory) : this(messagePackSerializer,file,semaphoreFactory,directory,new EmptyLogger())
+        {
+        }
+        
+        public FileStreamer(IMessagePackSerializer messagePackSerializer, IFile file, ISemaphoreFactory semaphoreFactory, IDirectory directory, ILogger logger)
         {
             _messagePackSerializer = messagePackSerializer;
             _file = file;
+            _semaphoreFactory = semaphoreFactory;
             _directory = directory;
             _logger = logger;
-            _semaphoreFactory = semaphoreFactory;
         }
 
         public Task<bool> GetLockForFile(string filename)

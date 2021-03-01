@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using PackDB.Core;
 using PackDB.Core.Auditing;
 using PackDB.Core.Data;
 
@@ -10,8 +11,13 @@ namespace PackDB.FileSystem.AuditWorker
 {
     public class FileAuditWorker : IFileAuditWorker
     {
+
         [ExcludeFromCodeCoverage]
         public FileAuditWorker(ILogger logger) : this(new FileStreamer(logger), logger)
+        {
+        }
+
+        public FileAuditWorker(IFileStreamer fileStreamer) : this(fileStreamer,new EmptyLogger())
         {
         }
 
@@ -41,6 +47,10 @@ namespace PackDB.FileSystem.AuditWorker
         {
         }
 
+        public FileAuditWorker(IFileStreamer fileStreamer, IAuditGenerator auditGenerator) : this(fileStreamer,auditGenerator,new EmptyLogger())
+        {
+        }
+        
         public FileAuditWorker(IFileStreamer fileStreamer, IAuditGenerator auditGenerator, ILogger logger, string dataFolder = FileSystemConstants.DataFolder)
         {
             FileStreamer = fileStreamer;

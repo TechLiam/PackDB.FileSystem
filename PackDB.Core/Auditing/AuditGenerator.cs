@@ -10,6 +10,11 @@ namespace PackDB.Core.Auditing
     {
         private ILogger _logger;
 
+        public AuditGenerator()
+        {
+            _logger = new EmptyLogger();
+        }
+        
         public AuditGenerator(ILogger logger)
         {
             _logger = logger;

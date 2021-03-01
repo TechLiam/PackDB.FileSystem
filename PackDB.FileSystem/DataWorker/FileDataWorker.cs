@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using PackDB.Core;
 using PackDB.Core.Data;
 using PackDB.FileSystem.Attributes;
 
@@ -10,16 +11,34 @@ namespace PackDB.FileSystem.DataWorker
 {
     public class FileDataWorker : IFileDataWorker
     {
+
+        public FileDataWorker() : this(new EmptyLogger())
+        {
+        }
+        
         [ExcludeFromCodeCoverage]
         public FileDataWorker(ILogger logger) : this(new FileStreamer(logger), logger)
         {
         }
 
+
+        public FileDataWorker(string dataFolder) : this(dataFolder,new EmptyLogger())
+        {
+        }
+        
         [ExcludeFromCodeCoverage]
         public FileDataWorker(string dataFolder, ILogger logger) : this(new FileStreamer(logger), logger, dataFolder)
         {
         }
 
+        public FileDataWorker(IFileStreamer fileStreamer) : this(fileStreamer, new EmptyLogger())
+        {
+        }
+
+        public FileDataWorker(IFileStreamer fileStreamer, string dataFolder = FileSystemConstants.DataFolder) : this(fileStreamer,new EmptyLogger(), dataFolder)
+        {
+        }
+        
         public FileDataWorker(IFileStreamer fileStreamer, ILogger logger, string dataFolder = FileSystemConstants.DataFolder)
         {
             using (logger.BeginScope("{Operation}", nameof(FileDataWorker)))

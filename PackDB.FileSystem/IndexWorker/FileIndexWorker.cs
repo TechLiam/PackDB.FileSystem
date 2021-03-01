@@ -16,11 +16,23 @@ namespace PackDB.FileSystem.IndexWorker
         {
         }
 
+        public FileIndexWorker(string dataPath) : this(dataPath, new EmptyLogger())
+        {
+        }
+        
         [ExcludeFromCodeCoverage]
         public FileIndexWorker(string dataPath, ILogger logger) : this(new FileStreamer(logger), logger, dataPath)
         {
         }
 
+        public FileIndexWorker(IFileStreamer fileStreamer) : this(fileStreamer, new EmptyLogger())
+        {
+        }
+
+        public FileIndexWorker(IFileStreamer fileStreamer,string dataFolder = FileSystemConstants.DataFolder) : this(fileStreamer,new EmptyLogger(), dataFolder)
+        {
+        }
+        
         public FileIndexWorker(IFileStreamer fileStreamer, ILogger logger, string dataFolder = FileSystemConstants.DataFolder)
         {
             using (logger.BeginScope("{Operation}", nameof(FileIndexWorker)))
