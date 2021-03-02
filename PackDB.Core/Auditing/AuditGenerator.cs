@@ -13,7 +13,7 @@ namespace PackDB.Core.Auditing
         public AuditGenerator() : this(new EmptyLogger())
         {
         }
-        
+
         public AuditGenerator(ILogger logger)
         {
             using (logger.BeginScope("{Operation}", nameof(AuditGenerator)))

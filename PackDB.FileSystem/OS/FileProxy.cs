@@ -14,7 +14,7 @@ namespace PackDB.FileSystem.OS
         public FileProxy() : this(new EmptyLogger())
         {
         }
-        
+
         public FileProxy(ILogger logger)
         {
             using (logger.BeginScope("{Operation}", nameof(FileProxy)))

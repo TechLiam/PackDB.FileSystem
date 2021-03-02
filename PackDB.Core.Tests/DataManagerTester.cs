@@ -119,8 +119,9 @@ namespace PackDB.Core.Tests
                 .ReturnsAsync(true);
 
             MockLogger = new Mock<ILogger>();
-            
-            DataManager = new DataManager(MockDataStream.Object, MockIndexer.Object, MockAudit.Object, MockLogger.Object);
+
+            DataManager = new DataManager(MockDataStream.Object, MockIndexer.Object, MockAudit.Object,
+                MockLogger.Object);
         }
 
         private async IAsyncEnumerable<int> ExpectedIndexEntityList()
@@ -147,7 +148,7 @@ namespace PackDB.Core.Tests
         private Mock<IDataWorker> MockDataStream { get; set; }
         private Mock<IIndexWorker> MockIndexer { get; set; }
         private Mock<IAuditWorker> MockAudit { get; set; }
-        private Mock<Microsoft.Extensions.Logging.ILogger> MockLogger { get; set; }
+        private Mock<ILogger> MockLogger { get; set; }
 
         [Test(Author = "PackDB Creator")]
         public async Task ReadWhenThereNoData()
@@ -627,7 +628,7 @@ namespace PackDB.Core.Tests
                 .ReturnsAsync(false);
             var result = await DataManager.Delete<AuditedEntity>(ExpectedAuditedEntity.Id);
             MockDataStream
-                .Verify(x => x.Rollback<AuditedEntity>(ExpectedAuditedEntity.Id, ExpectedAuditedEntity), Times.Once);
+                .Verify(x => x.Rollback(ExpectedAuditedEntity.Id, ExpectedAuditedEntity), Times.Once);
             return result;
         }
 
@@ -639,7 +640,7 @@ namespace PackDB.Core.Tests
                 .ReturnsAsync(false);
             var result = await DataManager.Delete<AuditedEntity>(ExpectedAuditedEntity.Id);
             MockDataStream
-                .Verify(x => x.Rollback<AuditedEntity>(ExpectedAuditedEntity.Id,ExpectedAuditedEntity), Times.Once);
+                .Verify(x => x.Rollback(ExpectedAuditedEntity.Id, ExpectedAuditedEntity), Times.Once);
             MockAudit
                 .Verify(x => x.RollbackEvent(ExpectedAuditedEntity), Times.Once);
             return result;

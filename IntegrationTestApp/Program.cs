@@ -16,15 +16,16 @@ namespace IntegrationTestApp
         {
             Log.Logger = new LoggerConfiguration()
                 .Enrich.With<RemovePropertiesEnricher>()
-                .WriteTo.Console(LogEventLevel.Verbose,"{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}]{NewLine}\tScope:\t\t{Scope}{NewLine}\tMessage:\t{Message}{NewLine}\tProperties:\t{Properties}{NewLine}\tException:\t{Exception}{NewLine}")
+                .WriteTo.Console(LogEventLevel.Verbose,
+                    "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}]{NewLine}\tScope:\t\t{Scope}{NewLine}\tMessage:\t{Message}{NewLine}\tProperties:\t{Properties}{NewLine}\tException:\t{Exception}{NewLine}")
                 .MinimumLevel.Information()
                 .CreateLogger();
-            
+
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
-            
+
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            
+
             var logger = serviceProvider.GetService<ILogger<Program>>();
             if (logger == null) return;
             using (logger.BeginScope("Integration testing app"))
@@ -112,8 +113,8 @@ namespace IntegrationTestApp
             services.AddLogging(configure => configure.AddSerilog())
                 .AddTransient<Program>();
         }
-        
-        class RemovePropertiesEnricher : ILogEventEnricher
+
+        private class RemovePropertiesEnricher : ILogEventEnricher
         {
             public void Enrich(LogEvent le, ILogEventPropertyFactory lepf)
             {

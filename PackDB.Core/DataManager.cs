@@ -30,7 +30,8 @@ namespace PackDB.Core
 
         public async Task<TDataType> Read<TDataType>(int id) where TDataType : DataEntity
         {
-            using (Logger.BeginScope("{Operation} is {Action}ing {DataType} with Id ({Id})", nameof(DataManager), "read",typeof(TDataType).Name, id))
+            using (Logger.BeginScope("{Operation} is {Action}ing {DataType} with Id ({Id})", nameof(DataManager),
+                "read", typeof(TDataType).Name, id))
             {
                 Logger.LogTrace("Started to read");
                 if (await DataStreamer.Exists<TDataType>(id)) return await DataStreamer.Read<TDataType>(id);
@@ -41,7 +42,8 @@ namespace PackDB.Core
 
         public async IAsyncEnumerable<TDataType> Read<TDataType>(IEnumerable<int> ids) where TDataType : DataEntity
         {
-            using (Logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(DataManager), "reading multiple",typeof(TDataType).Name, ids))
+            using (Logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(DataManager),
+                "reading multiple", typeof(TDataType).Name, ids))
             {
                 foreach (var id in ids) yield return await Read<TDataType>(id);
             }
@@ -51,7 +53,8 @@ namespace PackDB.Core
             Expression<Func<TDataType, string>> indexProperty) where TDataType : DataEntity
         {
             var indexMember = ((MemberExpression) indexProperty.Body).Member;
-            using (Logger.BeginScope("{Operation} is {Action} {IndexName} for {DataType} with a key {key}", nameof(DataManager), "read from index", indexMember.Name, typeof(TDataType).Name, key))
+            using (Logger.BeginScope("{Operation} is {Action} {IndexName} for {DataType} with a key {key}",
+                nameof(DataManager), "read from index", indexMember.Name, typeof(TDataType).Name, key))
             {
                 if (indexMember.IsDefined(typeof(IndexAttribute), true))
                 {
@@ -64,15 +67,18 @@ namespace PackDB.Core
                         Logger.LogInformation("Found ids in index", ids, key);
                         await foreach (var id in ids) yield return await Read<TDataType>(id);
                     }
+
                     yield break;
                 }
+
                 Logger.LogWarning("The property used is not marked as indexed");
             }
         }
 
         public async Task<bool> Write<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            using (Logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(DataManager), "writing", typeof(TDataType).Name, data.Id))
+            using (Logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(DataManager),
+                "writing", typeof(TDataType).Name, data.Id))
             {
                 Logger.LogTrace("Checking if data exists");
                 var currentData = await Read<TDataType>(data.Id);
@@ -104,6 +110,7 @@ namespace PackDB.Core
                                         Logger.LogInformation("Data, Audit saved successfully");
                                         return true;
                                     }
+
                                     Logger.LogWarning("Failed to index data");
                                     await AuditWorker.RollbackEvent(data);
                                     Logger.LogInformation("Added rollback to audit");
@@ -123,10 +130,11 @@ namespace PackDB.Core
                         await DataStreamer.DiscardChanges<TDataType>(data.Id);
                         Logger.LogTrace("Discard changes");
                     }
+
                     Logger.LogWarning("Failed to save data to the store");
                     return false;
                 }
-                
+
                 Logger.LogTrace("Data is not audited");
                 var writeAndCommit = await DataStreamer.WriteAndCommit(data.Id, data);
                 if (writeAndCommit)
@@ -139,6 +147,7 @@ namespace PackDB.Core
                         Logger.LogInformation("Rolled data back");
                         return false;
                     }
+
                     Logger.LogTrace("Data was indexed");
                     Logger.LogInformation("Data saved successfully");
                 }
@@ -146,13 +155,15 @@ namespace PackDB.Core
                 {
                     Logger.LogWarning("Failed to save data");
                 }
+
                 return writeAndCommit;
             }
         }
 
         public async Task<bool> Delete<TDataType>(int id) where TDataType : DataEntity
         {
-            using (Logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(DataManager), "deleteing", typeof(TDataType).Name, id))
+            using (Logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(DataManager),
+                "deleting", typeof(TDataType).Name, id))
             {
                 var data = await Read<TDataType>(id);
                 if (data is null)
@@ -160,7 +171,7 @@ namespace PackDB.Core
                     Logger.LogWarning("Unable to find the data it may already be deleted");
                     return false;
                 }
-                
+
                 if (typeof(TDataType).IsDefined(typeof(AuditAttribute), true))
                 {
                     Logger.LogTrace("Data is audited");
@@ -178,6 +189,7 @@ namespace PackDB.Core
                                     Logger.LogInformation("Data deleted from store");
                                     return true;
                                 }
+
                                 Logger.LogWarning("Failed to remove indexes for data");
                                 await AuditWorker.RollbackEvent(data);
                                 Logger.LogInformation("Added rollback audit record");
@@ -186,7 +198,8 @@ namespace PackDB.Core
                             {
                                 Logger.LogWarning("Failed to commit audit to store");
                             }
-                            await DataStreamer.Rollback(id,data);
+
+                            await DataStreamer.Rollback(id, data);
                             Logger.LogInformation("Rolled data back");
                         }
                         else
@@ -195,8 +208,10 @@ namespace PackDB.Core
                             await AuditWorker.DiscardEvents(data);
                             Logger.LogTrace("Discarded audit record");
                         }
+
                         return false;
                     }
+
                     Logger.LogWarning("Failed to create audit record for delete");
                     return false;
                 }
@@ -210,10 +225,12 @@ namespace PackDB.Core
                         Logger.LogInformation("Removed any indexes for data");
                         return true;
                     }
+
                     Logger.LogWarning("Failed to remove indexes for data");
                     await DataStreamer.Rollback(id, data);
                     Logger.LogInformation("Rolled data back");
                 }
+
                 Logger.LogWarning("Failed to delete data");
                 return false;
             }
@@ -221,7 +238,8 @@ namespace PackDB.Core
 
         public async Task<bool> Restore<TDataType>(int id) where TDataType : DataEntity
         {
-            using (Logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(DataManager), "restoring", typeof(TDataType).Name, id))
+            using (Logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(DataManager),
+                "restoring", typeof(TDataType).Name, id))
             {
                 var data = await Read<TDataType>(id);
                 if (data is null)
@@ -244,6 +262,7 @@ namespace PackDB.Core
                                         Logger.LogInformation("Restored data with audit");
                                         return true;
                                     }
+
                                     Logger.LogWarning("Failed to index data");
                                     await AuditWorker.RollbackEvent(data);
                                 }
@@ -266,14 +285,18 @@ namespace PackDB.Core
                                 Logger.LogInformation("Restored data");
                                 return true;
                             }
+
                             Logger.LogWarning("Failed to index data");
                         }
+
                         await DataStreamer.Delete<TDataType>(id);
                         Logger.LogInformation("Rolled back restore");
                     }
+
                     Logger.LogWarning("Failed to restore data");
                     return false;
                 }
+
                 Logger.LogWarning("Data didn't need restoring");
                 return true;
             }
@@ -281,7 +304,8 @@ namespace PackDB.Core
 
         public int GetNextId<TDataType>() where TDataType : DataEntity
         {
-            using (Logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(DataManager), "getting next id", typeof(TDataType).Name))
+            using (Logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(DataManager), "getting next id",
+                typeof(TDataType).Name))
             {
                 Logger.LogTrace("Getting next id from store");
                 var id = DataStreamer.NextId<TDataType>();

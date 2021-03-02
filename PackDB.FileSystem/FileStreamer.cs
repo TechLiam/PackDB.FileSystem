@@ -15,11 +15,11 @@ namespace PackDB.FileSystem
     {
         private readonly IDirectory _directory;
         private readonly IFile _file;
-        private readonly ILogger _logger;
 
         private readonly IDictionary<string, ISemaphore> _fileLocks = new Dictionary<string, ISemaphore>();
         private readonly IDictionary<string, IStream> _fileStreams = new Dictionary<string, IStream>();
         private readonly TimeSpan _lockWaitTimeout = new TimeSpan(0, 0, 1, 0, 0);
+        private readonly ILogger _logger;
         private readonly IMessagePackSerializer _messagePackSerializer;
         private readonly ISemaphoreFactory _semaphoreFactory;
 
@@ -27,18 +27,22 @@ namespace PackDB.FileSystem
         public FileStreamer() : this(new EmptyLogger())
         {
         }
-        
+
         [ExcludeFromCodeCoverage]
-        public FileStreamer(ILogger logger) : this(new MessagePackSerializer(),new FileProxy(logger), new SemaphoreFactory(), new DirectoryProxy(), logger)
+        public FileStreamer(ILogger logger) : this(new MessagePackSerializer(), new FileProxy(logger),
+            new SemaphoreFactory(), new DirectoryProxy(), logger)
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileStreamer(IMessagePackSerializer messagePackSerializer, IFile file, ISemaphoreFactory semaphoreFactory, IDirectory directory) : this(messagePackSerializer,file,semaphoreFactory,directory,new EmptyLogger())
+        public FileStreamer(IMessagePackSerializer messagePackSerializer, IFile file,
+            ISemaphoreFactory semaphoreFactory, IDirectory directory) : this(messagePackSerializer, file,
+            semaphoreFactory, directory, new EmptyLogger())
         {
         }
-        
-        public FileStreamer(IMessagePackSerializer messagePackSerializer, IFile file, ISemaphoreFactory semaphoreFactory, IDirectory directory, ILogger logger)
+
+        public FileStreamer(IMessagePackSerializer messagePackSerializer, IFile file,
+            ISemaphoreFactory semaphoreFactory, IDirectory directory, ILogger logger)
         {
             using (logger.BeginScope("{Operation}", nameof(FileStreamer)))
             {
@@ -53,7 +57,8 @@ namespace PackDB.FileSystem
 
         public Task<bool> GetLockForFile(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer), "getting a lock for the file", filename))
+            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+                "getting a lock for the file", filename))
             {
                 lock (_fileLocks)
                 {
@@ -62,6 +67,7 @@ namespace PackDB.FileSystem
                         _fileLocks.Add(filename, _semaphoreFactory.Create(1, 1));
                         _logger.LogTrace("Created new semaphore for file");
                     }
+
                     var result = Task.FromResult(_fileLocks[filename].Wait(_lockWaitTimeout));
                     _logger.LogInformation("Got lock for file");
                     return result;
@@ -81,9 +87,11 @@ namespace PackDB.FileSystem
                         _logger.LogWarning("There is no lock for the file");
                         return Task.CompletedTask;
                     }
+
                     _fileLocks[filename].Release();
                     _logger.LogInformation("Released semaphore for file");
                 }
+
                 return Task.CompletedTask;
             }
         }
@@ -98,6 +106,7 @@ namespace PackDB.FileSystem
                     _logger.LogTrace("Getting new file stream");
                     _fileStreams.Add(filename, await _file.OpenWrite(filename));
                 }
+
                 await _messagePackSerializer.Serialize(_fileStreams[filename].GetStream(), data);
                 _logger.LogInformation("Data written to file stream");
                 return true;
@@ -114,6 +123,7 @@ namespace PackDB.FileSystem
                     _logger.LogTrace("Getting new file stream");
                     _fileStreams.Add(filename, await _file.OpenRead(filename));
                 }
+
                 var result = await _messagePackSerializer.Deserialize<TDataType>(_fileStreams[filename].GetStream());
                 _logger.LogTrace("Read and deserialized data from file stream");
                 await CloseStream(filename);
@@ -132,6 +142,7 @@ namespace PackDB.FileSystem
                     _logger.LogTrace("There is no file stream to close");
                     return false;
                 }
+
                 _fileStreams[filename].Close();
                 _logger.LogTrace("File stream closed");
                 await DisposeOfStream(filename);
@@ -150,6 +161,7 @@ namespace PackDB.FileSystem
                     _logger.LogWarning("There is no file stream to dispose of");
                     return;
                 }
+
                 await _fileStreams[filename].Dispose();
                 _logger.LogTrace("Disposed of file stream");
                 _fileStreams.Remove(filename);
@@ -201,6 +213,7 @@ namespace PackDB.FileSystem
                     _logger.LogInformation("Undeleted file");
                     return true;
                 }
+
                 _logger.LogWarning("File is not soft deleted");
                 return true;
             }
@@ -208,7 +221,8 @@ namespace PackDB.FileSystem
 
         public string[] GetAllFileNames(string folder, string fileExtension)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {folder} with extension of {extension}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {folder} with extension of {extension}",
+                nameof(FileStreamer),
                 "getting names of files in folder", folder, fileExtension))
             {
                 return _directory.GetFiles(folder, fileExtension)

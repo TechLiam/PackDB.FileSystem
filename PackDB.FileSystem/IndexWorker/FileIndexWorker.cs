@@ -11,6 +11,8 @@ namespace PackDB.FileSystem.IndexWorker
 {
     public class FileIndexWorker : IFileIndexWorker
     {
+        private readonly ILogger _logger;
+
         [ExcludeFromCodeCoverage]
         public FileIndexWorker(ILogger logger) : this(new FileStreamer(logger), logger)
         {
@@ -20,7 +22,7 @@ namespace PackDB.FileSystem.IndexWorker
         public FileIndexWorker(string dataPath) : this(dataPath, new EmptyLogger())
         {
         }
-        
+
         [ExcludeFromCodeCoverage]
         public FileIndexWorker(string dataPath, ILogger logger) : this(new FileStreamer(logger), logger, dataPath)
         {
@@ -32,11 +34,13 @@ namespace PackDB.FileSystem.IndexWorker
         }
 
         [ExcludeFromCodeCoverage]
-        public FileIndexWorker(IFileStreamer fileStreamer,string dataFolder = FileSystemConstants.DataFolder) : this(fileStreamer,new EmptyLogger(), dataFolder)
+        public FileIndexWorker(IFileStreamer fileStreamer, string dataFolder = FileSystemConstants.DataFolder) : this(
+            fileStreamer, new EmptyLogger(), dataFolder)
         {
         }
-        
-        public FileIndexWorker(IFileStreamer fileStreamer, ILogger logger, string dataFolder = FileSystemConstants.DataFolder)
+
+        public FileIndexWorker(IFileStreamer fileStreamer, ILogger logger,
+            string dataFolder = FileSystemConstants.DataFolder)
         {
             using (logger.BeginScope("{Operation}", nameof(FileIndexWorker)))
             {
@@ -48,13 +52,13 @@ namespace PackDB.FileSystem.IndexWorker
         }
 
         private IFileStreamer FileStreamer { get; }
-        private readonly ILogger _logger;
 
         private string TopLevelDataFolderName { get; }
 
         public Task<bool> IndexExist<TDataType>(string indexName) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {IndexName} for {DataType}", nameof(FileIndexWorker), "checking existence of", indexName, typeof(TDataType).Name))
+            using (_logger.BeginScope("{Operation} is {Action} {IndexName} for {DataType}", nameof(FileIndexWorker),
+                "checking existence of", indexName, typeof(TDataType).Name))
             {
                 return FileStreamer.Exists(GetFileName<TDataType>(indexName));
             }
@@ -63,7 +67,8 @@ namespace PackDB.FileSystem.IndexWorker
         public async IAsyncEnumerable<int> GetIdsFromIndex<TDataType, TKeyType>(string indexName, TKeyType indexKey)
             where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {IndexName} for {DataType} with {key}", nameof(FileIndexWorker), "getting ids from", indexName, typeof(TDataType).Name, indexKey))
+            using (_logger.BeginScope("{Operation} is {Action} {IndexName} for {DataType} with {key}",
+                nameof(FileIndexWorker), "getting ids from", indexName, typeof(TDataType).Name, indexKey))
             {
                 var index = await FileStreamer.ReadDataFromStream<Index<TKeyType>>(GetFileName<TDataType>(indexName));
                 var key = index.Keys?.FirstOrDefault(x => x.Value.Equals(indexKey));
@@ -75,7 +80,7 @@ namespace PackDB.FileSystem.IndexWorker
 
                 foreach (var id in key.Ids)
                 {
-                    _logger.LogInformation("Returning {id}",id);
+                    _logger.LogInformation("Returning {id}", id);
                     yield return id;
                 }
             }
@@ -83,7 +88,8 @@ namespace PackDB.FileSystem.IndexWorker
 
         public async Task<bool> Index<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(FileIndexWorker), "indexing", typeof(TDataType).Name))
+            using (_logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(FileIndexWorker), "indexing",
+                typeof(TDataType).Name))
             {
                 var indexProperties = typeof(TDataType)
                     .GetProperties()
@@ -94,12 +100,13 @@ namespace PackDB.FileSystem.IndexWorker
                     _logger.LogTrace("There are no properties to index");
                     return true;
                 }
+
                 _logger.LogInformation("Starting to index");
                 var indexSuccess = true;
                 foreach (var indexProperty in indexProperties)
                 {
                     var indexName = indexProperty.Name;
-                    _logger.LogTrace("Indexing into {IndexName}",indexName);
+                    _logger.LogTrace("Indexing into {IndexName}", indexName);
                     Index<object> index;
                     var indexKey = indexProperty.GetValue(data);
                     var indexFileName = GetFileName<TDataType>(indexName);
@@ -194,20 +201,17 @@ namespace PackDB.FileSystem.IndexWorker
                 }
 
                 if (indexSuccess)
-                {
                     _logger.LogInformation("Indexed data successfully");
-                }
                 else
-                {
                     _logger.LogWarning("Failed to index data");
-                }
                 return indexSuccess;
             }
         }
 
         public async Task<bool> Unindex<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(FileIndexWorker), "unindexing", typeof(TDataType).Name))
+            using (_logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(FileIndexWorker), "unindexing",
+                typeof(TDataType).Name))
             {
                 var indexProperties = typeof(TDataType)
                     .GetProperties()
@@ -218,12 +222,13 @@ namespace PackDB.FileSystem.IndexWorker
                     _logger.LogTrace("There are no properties are indexed");
                     return true;
                 }
+
                 _logger.LogInformation("Starting to unindex");
                 var unindexSuccess = true;
                 foreach (var indexProperty in indexProperties)
                 {
                     var indexName = indexProperty.Name;
-                    _logger.LogTrace("Unindexing {IndexName}",indexName);
+                    _logger.LogTrace("Unindexing {IndexName}", indexName);
                     if (await IndexExist<TDataType>(indexName))
                     {
                         _logger.LogTrace("Index exists");
@@ -300,14 +305,11 @@ namespace PackDB.FileSystem.IndexWorker
                         _logger.LogTrace("Index doesn't exist");
                     }
                 }
+
                 if (unindexSuccess)
-                {
                     _logger.LogInformation("Unindex data successfully");
-                }
                 else
-                {
                     _logger.LogWarning("Failed to unindex data");
-                }
                 return unindexSuccess;
             }
         }

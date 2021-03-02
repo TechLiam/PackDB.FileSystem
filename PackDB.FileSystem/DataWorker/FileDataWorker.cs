@@ -11,22 +11,23 @@ namespace PackDB.FileSystem.DataWorker
 {
     public class FileDataWorker : IFileDataWorker
     {
+        private readonly ILogger _logger;
 
         [ExcludeFromCodeCoverage]
         public FileDataWorker() : this(new EmptyLogger())
         {
         }
-        
+
         [ExcludeFromCodeCoverage]
         public FileDataWorker(ILogger logger) : this(new FileStreamer(logger), logger)
         {
         }
 
         [ExcludeFromCodeCoverage]
-        public FileDataWorker(string dataFolder) : this(dataFolder,new EmptyLogger())
+        public FileDataWorker(string dataFolder) : this(dataFolder, new EmptyLogger())
         {
         }
-        
+
         [ExcludeFromCodeCoverage]
         public FileDataWorker(string dataFolder, ILogger logger) : this(new FileStreamer(logger), logger, dataFolder)
         {
@@ -38,11 +39,13 @@ namespace PackDB.FileSystem.DataWorker
         }
 
         [ExcludeFromCodeCoverage]
-        public FileDataWorker(IFileStreamer fileStreamer, string dataFolder = FileSystemConstants.DataFolder) : this(fileStreamer,new EmptyLogger(), dataFolder)
+        public FileDataWorker(IFileStreamer fileStreamer, string dataFolder = FileSystemConstants.DataFolder) : this(
+            fileStreamer, new EmptyLogger(), dataFolder)
         {
         }
-        
-        public FileDataWorker(IFileStreamer fileStreamer, ILogger logger, string dataFolder = FileSystemConstants.DataFolder)
+
+        public FileDataWorker(IFileStreamer fileStreamer, ILogger logger,
+            string dataFolder = FileSystemConstants.DataFolder)
         {
             using (logger.BeginScope("{Operation}", nameof(FileDataWorker)))
             {
@@ -54,13 +57,13 @@ namespace PackDB.FileSystem.DataWorker
         }
 
         private IFileStreamer FileStreamer { get; }
-        private readonly ILogger _logger;
-        
+
         private string TopLevelDataFolderName { get; }
 
         public async Task<bool> Write<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker), "writing", typeof(TDataType).Name, id))
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "writing", typeof(TDataType).Name, id))
             {
                 var filename = GetFileName<TDataType>(id);
                 var maxAttempts = MaxAttempts<TDataType>();
@@ -79,15 +82,17 @@ namespace PackDB.FileSystem.DataWorker
                                 _logger.LogInformation("Wrote the data to the file system");
                                 return true;
                             }
+
                             _logger.LogWarning("Failed to write data to the file system");
                             await FileStreamer.UnlockFile(filename);
                         }
                         catch (Exception exception)
                         {
-                            _logger.LogWarning(exception,"While writing data to the file system an error happened");
+                            _logger.LogWarning(exception, "While writing data to the file system an error happened");
                             await FileStreamer.UnlockFile(filename);
                         }
                 }
+
                 _logger.LogError("Failed to write data to the file system");
                 return false;
             }
@@ -95,7 +100,8 @@ namespace PackDB.FileSystem.DataWorker
 
         public async Task<bool> Commit<TDataType>(int id) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker), "commiting data", typeof(TDataType).Name, id))
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "commiting data", typeof(TDataType).Name, id))
             {
                 var filename = GetFileName<TDataType>(id);
                 var maxAttempts = MaxAttempts<TDataType>();
@@ -116,9 +122,10 @@ namespace PackDB.FileSystem.DataWorker
                     }
                     catch (Exception exception)
                     {
-                        _logger.LogWarning(exception,"Failed to commit data to disk as an error happened");
+                        _logger.LogWarning(exception, "Failed to commit data to disk as an error happened");
                     }
                 }
+
                 _logger.LogError("Failed to commit data to disk");
                 await DiscardChanges<TDataType>(id);
                 return false;
@@ -127,10 +134,11 @@ namespace PackDB.FileSystem.DataWorker
 
         public async Task DiscardChanges<TDataType>(int id) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker), "discarding changes", typeof(TDataType).Name, id))
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "discarding changes", typeof(TDataType).Name, id))
             {
                 var filename = GetFileName<TDataType>(id);
-                _logger.LogTrace("Discarding changes to file {filename}",filename);
+                _logger.LogTrace("Discarding changes to file {filename}", filename);
                 await FileStreamer.DisposeOfStream(filename);
                 await FileStreamer.UnlockFile(filename);
                 _logger.LogInformation("Discarded changes to file");
@@ -139,7 +147,8 @@ namespace PackDB.FileSystem.DataWorker
 
         public async Task<bool> WriteAndCommit<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker), "writing and commiting", typeof(TDataType).Name, id))
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "writing and commiting", typeof(TDataType).Name, id))
             {
                 return await Write(id, data) && await Commit<TDataType>(id);
             }
@@ -147,7 +156,8 @@ namespace PackDB.FileSystem.DataWorker
 
         public async Task<TDataType> Read<TDataType>(int id) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker), "reading", typeof(TDataType).Name, id))
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "reading", typeof(TDataType).Name, id))
             {
                 var filename = GetFileName<TDataType>(id);
                 var maxAttempts = MaxAttempts<TDataType>();
@@ -165,7 +175,7 @@ namespace PackDB.FileSystem.DataWorker
                         }
                         catch (Exception exception)
                         {
-                            _logger.LogWarning(exception,"Failed to read data as an error happened");
+                            _logger.LogWarning(exception, "Failed to read data as an error happened");
                         }
                         finally
                         {
@@ -175,6 +185,7 @@ namespace PackDB.FileSystem.DataWorker
                             await FileStreamer.UnlockFile(filename);
                         }
                 }
+
                 _logger.LogError("Failed to read data");
                 return null;
             }
@@ -182,7 +193,8 @@ namespace PackDB.FileSystem.DataWorker
 
         public Task<bool> Exists<TDataType>(int id) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker), "checking existence of", typeof(TDataType).Name, id))
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "checking existence of", typeof(TDataType).Name, id))
             {
                 return FileStreamer.Exists(GetFileName<TDataType>(id));
             }
@@ -190,7 +202,8 @@ namespace PackDB.FileSystem.DataWorker
 
         public Task<bool> Delete<TDataType>(int id) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker), "deleting", typeof(TDataType).Name, id))
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "deleting", typeof(TDataType).Name, id))
             {
                 return IsSoftDelete<TDataType>()
                     ? FileStreamer.SoftDelete(GetFileName<TDataType>(id))
@@ -200,7 +213,8 @@ namespace PackDB.FileSystem.DataWorker
 
         public Task<bool> Undelete<TDataType>(int id) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker), "undeleting", typeof(TDataType).Name, id))
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "undeleting", typeof(TDataType).Name, id))
             {
                 return IsSoftDelete<TDataType>()
                     ? FileStreamer.Undelete(GetFileName<TDataType>(id))
@@ -210,36 +224,32 @@ namespace PackDB.FileSystem.DataWorker
 
         public async Task Rollback<TDataType>(int id, TDataType data) where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker), "rollingback", typeof(TDataType).Name, id))
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "rollingback", typeof(TDataType).Name, id))
             {
                 if (IsSoftDelete<TDataType>())
                 {
                     _logger.LogTrace("Data would have been soft deleted so undeleting the data");
                     while (!await FileStreamer.Undelete(GetFileName<TDataType>(id)))
-                    {
                         _logger.LogWarning("Failed to restore data when it should be able to");
-                    }
                     _logger.LogInformation("Data rolledback");
                     return;
                 }
+
                 _logger.LogTrace("Data will need to be recreated");
                 while (!await WriteAndCommit(id, data))
-                {
                     _logger.LogWarning("Failed to recreate data when it should be able to");
-                }
                 _logger.LogInformation("Data rolledback");
             }
         }
 
         public int NextId<TDataType>() where TDataType : DataEntity
         {
-            using (_logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(FileDataWorker), "getting next id", typeof(TDataType).Name))
+            using (_logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(FileDataWorker),
+                "getting next id", typeof(TDataType).Name))
             {
                 var files = FileStreamer.GetAllFileNames(GetFolderName<TDataType>(), "data");
-                if (!files.Any())
-                {
-                    _logger.LogInformation("There are no existing files");
-                }
+                if (!files.Any()) _logger.LogInformation("There are no existing files");
                 return files.Any() ? Math.Max(files.Max(int.Parse) + 1, 1) : 1;
             }
         }
