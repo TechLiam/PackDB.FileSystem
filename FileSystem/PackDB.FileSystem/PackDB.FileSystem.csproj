@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\PackDB.Core\PackDB.Core.csproj" />
+      <ProjectReference Include="..\..\Core\PackDB.Core\PackDB.Core.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,16 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.Core", "PackDB.Core\PackDB.Core.csproj", "{8EC5C3E9-FA34-4789-BE8B-9973F1AAAFA2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.Core", "Core\PackDB.Core\PackDB.Core.csproj", "{8EC5C3E9-FA34-4789-BE8B-9973F1AAAFA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.FileSystem", "PackDB.FileSystem\PackDB.FileSystem.csproj", "{5A1834EA-178F-45E8-A91E-76369A0D156C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.Core.Tests", "Core\PackDB.Core.Tests\PackDB.Core.Tests.csproj", "{EAF3A773-1B9A-40F9-B5CA-FF996E9C8559}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.FileSystem.Tests", "PackDB.FileSystem.Tests\PackDB.FileSystem.Tests.csproj", "{6DE2539A-96C6-4D8C-9F46-0F5E9C736D43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.FileSystem", "FileSystem\PackDB.FileSystem\PackDB.FileSystem.csproj", "{5A1834EA-178F-45E8-A91E-76369A0D156C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.Core.Tests", "PackDB.Core.Tests\PackDB.Core.Tests.csproj", "{EAF3A773-1B9A-40F9-B5CA-FF996E9C8559}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.FileSystem.Tests", "FileSystem\PackDB.FileSystem.Tests\PackDB.FileSystem.Tests.csproj", "{6DE2539A-96C6-4D8C-9F46-0F5E9C736D43}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTestApp", "Examples\IntegrationTestApp\IntegrationTestApp.csproj", "{00190E07-EE9F-4813-8900-90693704450B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{5352F789-E495-49F5-B86A-8B7A0E0A0A4C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{665DB6D0-BCD2-4902-9B65-0C147BFBE7A5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileSystem", "FileSystem", "{A2403D0A-4EC8-4521-ADFC-7DE84139A73E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,5 +45,9 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{00190E07-EE9F-4813-8900-90693704450B} = {5352F789-E495-49F5-B86A-8B7A0E0A0A4C}
+		{8EC5C3E9-FA34-4789-BE8B-9973F1AAAFA2} = {665DB6D0-BCD2-4902-9B65-0C147BFBE7A5}
+		{EAF3A773-1B9A-40F9-B5CA-FF996E9C8559} = {665DB6D0-BCD2-4902-9B65-0C147BFBE7A5}
+		{5A1834EA-178F-45E8-A91E-76369A0D156C} = {A2403D0A-4EC8-4521-ADFC-7DE84139A73E}
+		{6DE2539A-96C6-4D8C-9F46-0F5E9C736D43} = {A2403D0A-4EC8-4521-ADFC-7DE84139A73E}
 	EndGlobalSection
 EndGlobal
