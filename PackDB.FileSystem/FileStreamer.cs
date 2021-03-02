@@ -129,7 +129,7 @@ namespace PackDB.FileSystem
             {
                 if (!_fileStreams.ContainsKey(filename))
                 {
-                    _logger.LogWarning("There is no file stream to close");
+                    _logger.LogTrace("There is no file stream to close");
                     return false;
                 }
                 _fileStreams[filename].Close();
