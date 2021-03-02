@@ -15,26 +15,8 @@ Anyone can use PackDB if they wish it is published under the MIT licence and you
 ## Can I add to the project?
 Yes, please feel free to submit push requests to this repo or create stand-alone extension projects that can store data to other storage systems.
 
-## DataManager / IDataManager
-The DataManager is the entry point into PackDB and from a usage point of view the only thing you will ever need to work with.
+## Documentaton
+We will be adding documentation on every aspect of the PackDB solution in the Wiki section
 
-The IDataManager interface allows you to call the following methods:
-- Read
-- Write
-- Delete
-- Restore
-
-### Read
-This method is intended to retreave and return the data.
-There are three ways to read data from PackDB:
-1. Read by Id
-2. Read a collection of results by Id
-3. Read a collection of results by Index
-
-#### Read by Id
-
-``` csharp
-TDataType Read<TDataType>(int id) where TDataType : DataEntity;
-```
-This method allow a generic type of data to be retreaved as long as it inherits from DataEntity.
-Read should return NULL if the data doesn't exist and the fully Deserialized data if it does.
+## Help
+If you need help using this solution please create an issue in the issue tab and ask your question we will be happy to help
