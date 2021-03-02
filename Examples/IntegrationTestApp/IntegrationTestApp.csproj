@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\PackDB.Core\PackDB.Core.csproj" />
-      <ProjectReference Include="..\PackDB.FileSystem\PackDB.FileSystem.csproj" />
+      <ProjectReference Include="..\..\PackDB.Core\PackDB.Core.csproj" />
+      <ProjectReference Include="..\..\PackDB.FileSystem\PackDB.FileSystem.csproj" />
     </ItemGroup>
 
     <ItemGroup>

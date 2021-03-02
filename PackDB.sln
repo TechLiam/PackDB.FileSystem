@@ -8,7 +8,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.FileSystem.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.Core.Tests", "PackDB.Core.Tests\PackDB.Core.Tests.csproj", "{EAF3A773-1B9A-40F9-B5CA-FF996E9C8559}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTestApp", "IntegrationTestApp\IntegrationTestApp.csproj", "{00190E07-EE9F-4813-8900-90693704450B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTestApp", "Examples\IntegrationTestApp\IntegrationTestApp.csproj", "{00190E07-EE9F-4813-8900-90693704450B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{5352F789-E495-49F5-B86A-8B7A0E0A0A4C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +38,8 @@ Global
 		{00190E07-EE9F-4813-8900-90693704450B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00190E07-EE9F-4813-8900-90693704450B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00190E07-EE9F-4813-8900-90693704450B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{00190E07-EE9F-4813-8900-90693704450B} = {5352F789-E495-49F5-B86A-8B7A0E0A0A4C}
 	EndGlobalSection
 EndGlobal
