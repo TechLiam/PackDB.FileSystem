@@ -17,6 +17,7 @@ namespace PackDB.FileSystem.AuditWorker
         {
         }
 
+        [ExcludeFromCodeCoverage]
         public FileAuditWorker(IFileStreamer fileStreamer) : this(fileStreamer,new EmptyLogger())
         {
         }
@@ -53,10 +54,14 @@ namespace PackDB.FileSystem.AuditWorker
         
         public FileAuditWorker(IFileStreamer fileStreamer, IAuditGenerator auditGenerator, ILogger logger, string dataFolder = FileSystemConstants.DataFolder)
         {
-            FileStreamer = fileStreamer;
-            AuditGenerator = auditGenerator;
-            _logger = logger;
-            TopLevelDataFolderName = dataFolder;
+            using (logger.BeginScope("{Operation}", nameof(FileAuditWorker)))
+            {
+                FileStreamer = fileStreamer;
+                AuditGenerator = auditGenerator;
+                _logger = logger;
+                TopLevelDataFolderName = dataFolder;
+                _logger.LogInformation("Created audit worker");
+            }
         }
 
         private ILogger _logger;
@@ -66,94 +71,147 @@ namespace PackDB.FileSystem.AuditWorker
 
         public Task<bool> CreationEvent<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            return WriteEvent(GetFileName<TDataType>(data.Id), MaxAttempts<TDataType>(),
-                () => AuditGenerator.NewLog(data));
+            using (_logger.BeginScope("{Operation} is logging a {Action} for {DataType}", nameof(FileAuditWorker), "create event", typeof(TDataType).Name))
+            {
+                return WriteEvent(GetFileName<TDataType>(data.Id), MaxAttempts<TDataType>(),
+                    () => AuditGenerator.NewLog(data));
+            }
         }
 
         public async Task<bool> UpdateEvent<TDataType>(TDataType newData, TDataType oldData)
             where TDataType : DataEntity
         {
-            var currentLog = await ReadAllEvents<TDataType>(newData.Id);
-            return await WriteEvent(GetFileName<TDataType>(newData.Id), MaxAttempts<TDataType>(),
-                () => AuditGenerator.UpdateLog(newData, oldData, currentLog));
+            using (_logger.BeginScope("{Operation} is logging an {Action} for {DataType}", nameof(FileAuditWorker),
+                "update event", typeof(TDataType).Name))
+            {
+                var currentLog = await ReadAllEvents<TDataType>(newData.Id);
+                return await WriteEvent(GetFileName<TDataType>(newData.Id), MaxAttempts<TDataType>(),
+                    () => AuditGenerator.UpdateLog(newData, oldData, currentLog));
+            }
         }
 
         public async Task<bool> DeleteEvent<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            var currentLog = await ReadAllEvents<TDataType>(data.Id);
-            return await WriteEvent(GetFileName<TDataType>(data.Id), MaxAttempts<TDataType>(),
-                () => AuditGenerator.DeleteLog(data, currentLog));
+            using (_logger.BeginScope("{Operation} is logging a {Action} for {DataType}", nameof(FileAuditWorker),
+                "delete event", typeof(TDataType).Name))
+            {
+                var currentLog = await ReadAllEvents<TDataType>(data.Id);
+                return await WriteEvent(GetFileName<TDataType>(data.Id), MaxAttempts<TDataType>(),
+                    () => AuditGenerator.DeleteLog(data, currentLog));
+            }
         }
 
         public async Task<bool> UndeleteEvent<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            var currentLog = await ReadAllEvents<TDataType>(data.Id);
-            return await WriteEvent(GetFileName<TDataType>(data.Id), MaxAttempts<TDataType>(),
-                () => AuditGenerator.UndeleteLog(data, currentLog));
+            using (_logger.BeginScope("{Operation} is logging an {Action} for {DataType}", nameof(FileAuditWorker),
+                "undelete event", typeof(TDataType).Name))
+            {
+                var currentLog = await ReadAllEvents<TDataType>(data.Id);
+                return await WriteEvent(GetFileName<TDataType>(data.Id), MaxAttempts<TDataType>(),
+                    () => AuditGenerator.UndeleteLog(data, currentLog));
+            }
         }
 
         public async Task<bool> RollbackEvent<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            var currentLog = await ReadAllEvents<TDataType>(data.Id);
-            return await WriteEvent(GetFileName<TDataType>(data.Id), MaxAttempts<TDataType>(),
-                () => AuditGenerator.RollbackLog(data, currentLog));
+            using (_logger.BeginScope("{Operation} is logging a {Action} for {DataType}", nameof(FileAuditWorker),
+                "rollback event", typeof(TDataType).Name))
+            {
+                var currentLog = await ReadAllEvents<TDataType>(data.Id);
+                return await WriteEvent(GetFileName<TDataType>(data.Id), MaxAttempts<TDataType>(),
+                    () => AuditGenerator.RollbackLog(data, currentLog));
+            }
         }
 
         public async Task<bool> CommitEvents<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            var filename = GetFileName<TDataType>(data.Id);
-            var maxAttempts = MaxAttempts<TDataType>();
-            var attempts = 0;
-            while (maxAttempts == -1 || attempts < maxAttempts)
+            using (_logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(FileAuditWorker),
+                "committing events", typeof(TDataType).Name))
             {
-                attempts++;
-                try
+                var filename = GetFileName<TDataType>(data.Id);
+                var maxAttempts = MaxAttempts<TDataType>();
+                _logger.LogTrace("Will try to write to {filename} {MaxAttempts} times", filename, maxAttempts >= 0 ? maxAttempts.ToString() : "until success");
+                var attempts = 0;
+                while (maxAttempts == -1 || attempts < maxAttempts)
                 {
-                    if (await FileStreamer.CloseStream(filename))
+                    attempts++;
+                    _logger.LogTrace("Attempt number {Attempt}", attempts);
+                    try
                     {
-                        await FileStreamer.UnlockFile(filename);
-                        return true;
+                        _logger.LogTrace("Closing audit file");
+                        if (await FileStreamer.CloseStream(filename))
+                        {
+                            _logger.LogTrace("Closed audit file");
+                            await FileStreamer.UnlockFile(filename);
+                            _logger.LogInformation("Committed audit to file");
+                            return true;
+                        }
+                        _logger.LogWarning("Failed to close audit file");
+                    }
+                    catch (Exception exception)
+                    {
+                        _logger.LogWarning(exception,"Failed to commit audit");
                     }
                 }
-                catch
-                {
-                }
+                
+                await DiscardEvents(data);
+                _logger.LogWarning("Discarded events after max attempts trying to commit audit");
+                return false;
             }
-
-            await DiscardEvents(data);
-            return false;
         }
 
         public async Task DiscardEvents<TDataType>(TDataType data) where TDataType : DataEntity
         {
-            var filename = GetFileName<TDataType>(data.Id);
-            await FileStreamer.DisposeOfStream(filename);
-            await FileStreamer.UnlockFile(filename);
+            using (_logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(FileAuditWorker),
+                "discarded events", typeof(TDataType).Name))
+            {
+                var filename = GetFileName<TDataType>(data.Id);
+                _logger.LogTrace("Discarding changes for {filename}", filename);
+                await FileStreamer.DisposeOfStream(filename);
+                await FileStreamer.UnlockFile(filename);
+                _logger.LogInformation("Discarded changes for {filename}", filename);
+            }
         }
 
         public async Task<AuditLog> ReadAllEvents<TDataType>(int id) where TDataType : DataEntity
         {
-            var filename = GetFileName<TDataType>(id);
-            var maxAttempts = MaxAttempts<TDataType>();
-            var attempts = 0;
-            while (maxAttempts == -1 || attempts < maxAttempts)
+            using (_logger.BeginScope("{Operation} is {Action} for {DataType} with id ({id})", nameof(FileAuditWorker),
+                "reading all events", typeof(TDataType).Name,id))
             {
-                attempts++;
-                if (await FileStreamer.GetLockForFile(filename))
-                    try
+                var filename = GetFileName<TDataType>(id);
+                var maxAttempts = MaxAttempts<TDataType>();
+                _logger.LogTrace("Will try to write to {filename} {MaxAttempts} times", filename, maxAttempts >= 0 ? maxAttempts.ToString() : "until success");
+                var attempts = 0;
+                while (maxAttempts == -1 || attempts < maxAttempts)
+                {
+                    attempts++;
+                    _logger.LogTrace("Attempt number {Attempt}", attempts);
+                    if (await FileStreamer.GetLockForFile(filename))
                     {
-                        return await FileStreamer.ReadDataFromStream<AuditLog>(filename);
+                        try
+                        {
+                            var audit = await FileStreamer.ReadDataFromStream<AuditLog>(filename);
+                            _logger.LogInformation("Read audit from disk");
+                            return audit;
+                        }
+                        catch (Exception exception)
+                        {
+                            _logger.LogWarning(exception,"Failed to read audit");
+                        }
+                        finally
+                        {
+                            await FileStreamer.UnlockFile(filename);
+                            _logger.LogTrace("Unlocked audit file");
+                        }
                     }
-                    catch
+                    else
                     {
+                        _logger.LogWarning("Failed to get a lock for the audit file");
                     }
-                    finally
-                    {
-                        await FileStreamer.UnlockFile(filename);
-                    }
-            }
+                }
 
-            return null;
+                return null;
+            }
         }
 
         private string GetFileName<TDataType>(int id)
@@ -172,22 +230,37 @@ namespace PackDB.FileSystem.AuditWorker
 
         private async Task<bool> WriteEvent(string filename, int maxAttempts, Func<AuditLog> generateLog)
         {
+            _logger.LogTrace("Will try to write to {filename} {MaxAttempts} times", filename, maxAttempts >= 0 ? maxAttempts.ToString() : "until success");
             var attempts = 0;
             while (maxAttempts == -1 || attempts < maxAttempts)
             {
                 attempts++;
+                _logger.LogTrace("Attempt number {Attempt}", attempts);
                 if (await FileStreamer.GetLockForFile(filename))
+                {
                     try
                     {
-                        if (await FileStreamer.WriteDataToStream(filename, generateLog.Invoke())) return true;
+                        _logger.LogTrace("Got a lock on the audit file");
+                        if (await FileStreamer.WriteDataToStream(filename, generateLog.Invoke()))
+                        {
+                            _logger.LogInformation("Wrote audit log to audit file");
+                            return true;
+                        }
+                        _logger.LogWarning("Failed to write audit log to audit file");
                         await FileStreamer.UnlockFile(filename);
                     }
-                    catch
+                    catch (Exception exception)
                     {
+                        _logger.LogWarning(exception, "Failed to write audit log to audit file");
                         await FileStreamer.UnlockFile(filename);
                     }
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to get a lock for the audit file");
+                }
             }
-
+            _logger.LogWarning("Failed to write event after max attempts");
             return false;
         }
     }

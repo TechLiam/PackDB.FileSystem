@@ -12,6 +12,7 @@ namespace PackDB.FileSystem.DataWorker
     public class FileDataWorker : IFileDataWorker
     {
 
+        [ExcludeFromCodeCoverage]
         public FileDataWorker() : this(new EmptyLogger())
         {
         }
@@ -21,7 +22,7 @@ namespace PackDB.FileSystem.DataWorker
         {
         }
 
-
+        [ExcludeFromCodeCoverage]
         public FileDataWorker(string dataFolder) : this(dataFolder,new EmptyLogger())
         {
         }
@@ -31,10 +32,12 @@ namespace PackDB.FileSystem.DataWorker
         {
         }
 
+        [ExcludeFromCodeCoverage]
         public FileDataWorker(IFileStreamer fileStreamer) : this(fileStreamer, new EmptyLogger())
         {
         }
 
+        [ExcludeFromCodeCoverage]
         public FileDataWorker(IFileStreamer fileStreamer, string dataFolder = FileSystemConstants.DataFolder) : this(fileStreamer,new EmptyLogger(), dataFolder)
         {
         }

@@ -16,6 +16,7 @@ namespace PackDB.FileSystem.IndexWorker
         {
         }
 
+        [ExcludeFromCodeCoverage]
         public FileIndexWorker(string dataPath) : this(dataPath, new EmptyLogger())
         {
         }
@@ -25,10 +26,12 @@ namespace PackDB.FileSystem.IndexWorker
         {
         }
 
+        [ExcludeFromCodeCoverage]
         public FileIndexWorker(IFileStreamer fileStreamer) : this(fileStreamer, new EmptyLogger())
         {
         }
 
+        [ExcludeFromCodeCoverage]
         public FileIndexWorker(IFileStreamer fileStreamer,string dataFolder = FileSystemConstants.DataFolder) : this(fileStreamer,new EmptyLogger(), dataFolder)
         {
         }
