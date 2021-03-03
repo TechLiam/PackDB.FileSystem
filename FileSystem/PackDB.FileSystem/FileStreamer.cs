@@ -41,6 +41,7 @@ namespace PackDB.FileSystem
         {
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public FileStreamer(IMessagePackSerializer messagePackSerializer, IFile file,
             ISemaphoreFactory semaphoreFactory, IDirectory directory, ILogger logger)
         {
@@ -57,7 +58,7 @@ namespace PackDB.FileSystem
 
         public Task<bool> GetLockForFile(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "getting a lock for the file", filename))
             {
                 lock (_fileLocks)
@@ -77,7 +78,7 @@ namespace PackDB.FileSystem
 
         public Task UnlockFile(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "unlocking file", filename))
             {
                 lock (_fileLocks)
@@ -98,7 +99,7 @@ namespace PackDB.FileSystem
 
         public async Task<bool> WriteDataToStream<TDataType>(string filename, TDataType data)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "writing data to file", filename))
             {
                 if (!_fileStreams.ContainsKey(filename))
@@ -115,7 +116,7 @@ namespace PackDB.FileSystem
 
         public async Task<TDataType> ReadDataFromStream<TDataType>(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "reading data from file", filename))
             {
                 if (!_fileStreams.ContainsKey(filename))
@@ -134,7 +135,7 @@ namespace PackDB.FileSystem
 
         public async Task<bool> CloseStream(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "closing file stream for", filename))
             {
                 if (!_fileStreams.ContainsKey(filename))
@@ -153,7 +154,7 @@ namespace PackDB.FileSystem
 
         public async Task DisposeOfStream(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "disposing of file stream for", filename))
             {
                 if (!_fileStreams.ContainsKey(filename))
@@ -171,18 +172,18 @@ namespace PackDB.FileSystem
 
         public Task<bool> Exists(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "checking if file exists for", filename))
             {
                 var result = _file.Exists(filename);
-                _logger.LogInformation("The result of checking if a file exists is {result}", result);
+                _logger.LogInformation("The result of checking if a file exists is {@Result}", result);
                 return result;
             }
         }
 
         public async Task<bool> Delete(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "deleting file", filename))
             {
                 await _file.Delete(filename);
@@ -193,7 +194,7 @@ namespace PackDB.FileSystem
 
         public async Task<bool> SoftDelete(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "soft deleting file", filename))
             {
                 await _file.Move(filename, filename + ".deleted");
@@ -204,7 +205,7 @@ namespace PackDB.FileSystem
 
         public async Task<bool> Undelete(string filename)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {filename}", nameof(FileStreamer),
+            using (_logger.BeginScope("{Operation} is {Action} {Filename}", nameof(FileStreamer),
                 "undeleting file", filename))
             {
                 if (await _file.Exists(filename + ".deleted"))
@@ -221,7 +222,7 @@ namespace PackDB.FileSystem
 
         public string[] GetAllFileNames(string folder, string fileExtension)
         {
-            using (_logger.BeginScope("{Operation} is {Action} {folder} with extension of {extension}",
+            using (_logger.BeginScope("{Operation} is {Action} {Folder} with extension of {Extension}",
                 nameof(FileStreamer),
                 "getting names of files in folder", folder, fileExtension))
             {
