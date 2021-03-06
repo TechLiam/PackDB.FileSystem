@@ -1,4 +1,4 @@
-name: .NET
+name: Built and Tested
 
 on:
   push:
