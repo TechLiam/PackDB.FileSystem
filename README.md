@@ -1,4 +1,4 @@
-# PackDB
+# PackDB [![Built and Tested](https://github.com/TechLiam/PackDB/actions/workflows/BuildAndTestAction.yml/badge.svg)](https://github.com/TechLiam/PackDB/actions/workflows/BuildAndTestAction.yml)
 PackDB was created to provide a .Net implementation of a data access layer that uses MessagePack as the data Serializer on the backend.
 
 The current solution allows data to be stored using the following methods:
