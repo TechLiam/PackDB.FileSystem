@@ -1,7 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using PackDB.Core;
 using PackDB.FileSystem;
 using Serilog;
 using Serilog.Core;
@@ -31,7 +33,7 @@ namespace IntegrationTestApp
             using (logger.BeginScope("Integration testing app"))
             {
                 logger.LogInformation("PackDB integration testing stating");
-                var dataManager = DataManagerFactory.CreateFileSystemDataManager(logger);
+                var dataManager = serviceProvider.GetService<IDataManager>();
 
                 var write = await dataManager.Write(new TestData
                 {
@@ -50,6 +52,8 @@ namespace IntegrationTestApp
                     logger.LogInformation($"Name: {read.Firstname} {read.Lastname}");
                     logger.LogInformation($"Year of birth: {read.YearOfBirth}");
                 }
+
+                var dataSet = dataManager.Read<TestData>(new []{1,2,3});
 
                 var delete = await dataManager.Delete<TestData>(1);
                 logger.LogInformation(delete ? "Deleted the data" : "Failed to delete data");
@@ -112,6 +116,7 @@ namespace IntegrationTestApp
         {
             services.AddLogging(configure => configure.AddSerilog())
                 .AddTransient<Program>();
+            services.TryAdd(ServiceDescriptor.Singleton<IDataManager>(provider => DataManagerFactory.CreateFileSystemDataManager()));
         }
 
         private class RemovePropertiesEnricher : ILogEventEnricher
