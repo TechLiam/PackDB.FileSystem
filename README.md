@@ -16,7 +16,7 @@ Anyone can use PackDB if they wish it is published under the MIT licence and you
 Yes, please feel free to submit push requests to this repo or create stand-alone extension projects that can store data to other storage systems.
 
 ## Documentaton
-We will be adding documentation on every aspect of the PackDB solution in the Wiki section
+We will be adding documentation on every aspect of the PackDB solution in the [Wiki](https://github.com/TechLiam/PackDB/wiki) section
 
 ## Help
 If you need help using this solution please create an issue in the issue tab and ask your question we will be happy to help
