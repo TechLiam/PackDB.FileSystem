@@ -3,6 +3,9 @@ name: Built and Tested
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - '.github/**'
+      - 'Examples/**'
   pull_request:
     branches: [ master ]
 
