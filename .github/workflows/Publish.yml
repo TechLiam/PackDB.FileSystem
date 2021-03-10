@@ -16,3 +16,5 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
+      - name: Run a script that has a secret
+      - run: echo ${{ secrets.TEST_SECRET }}
