@@ -21,4 +21,4 @@ jobs:
       - name: Test
         run: dotnet test
       - name: Package
-        run: ls
+        run: tree
