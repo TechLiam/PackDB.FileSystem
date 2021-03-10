@@ -24,3 +24,14 @@ jobs:
         run: | 
           cd /Core/PackDB.Core/bin/Release
           tree
+      - name: Publish NuGet
+        uses: brandedoutcast/publish-nuget@v2.5.5
+        with:
+          # Filepath of the project to be packaged, relative to root of repository
+          PROJECT_FILE_PATH: /Core/PackDB.Core/PackDB.Core.csproj
+          # NuGet package id, used for version detection & defaults to project name
+          PACKAGE_NAME: PackDB.Core
+          # API key to authenticate with NuGet server
+          NUGET_KEY: ${{ github.NUGETAPIKEY }}
+          # Flag to toggle pushing symbols along with nuget package to the server, disabled by default
+          INCLUDE_SYMBOLS: # optional
