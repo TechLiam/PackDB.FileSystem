@@ -20,10 +20,6 @@ jobs:
         run: dotnet build --no-restore -c Release
       - name: Test
         run: dotnet test
-      - name: Package
-        run: | 
-          cd /Core/PackDB.Core/bin/Release
-          tree
       - name: Publish NuGet
         uses: brandedoutcast/publish-nuget@v2.5.5
         with:
