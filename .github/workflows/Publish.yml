@@ -21,4 +21,6 @@ jobs:
       - name: Test
         run: dotnet test
       - name: Package
-        run: test -f "/Core/PackDB.Core/bin/Release/PackDB.Core.0.1.0.nupkg"
+        run: | 
+          cd /Core/PackDB.Core/bin/Release
+          tree
