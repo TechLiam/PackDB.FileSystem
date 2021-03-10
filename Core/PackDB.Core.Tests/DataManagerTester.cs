@@ -126,17 +126,18 @@ namespace PackDB.Core.Tests
 
         private async IAsyncEnumerable<int> ExpectedIndexEntityList()
         {
-            yield return ExpectedIndexedEntity.Id;
+            yield return await Task.FromResult(ExpectedIndexedEntity.Id);
         }
 
         private async IAsyncEnumerable<int> EmptyIndexEntityList()
         {
+            await Task.CompletedTask;
             yield break;
         }
 
         private async IAsyncEnumerable<int> RandomIndexEntityList()
         {
-            yield return Randomizer.Next();
+            yield return await Task.FromResult(Randomizer.Next());
         }
 
         private DataManager DataManager { get; set; }
