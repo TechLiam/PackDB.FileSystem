@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.FileSystem", "PackDB.FileSystem\PackDB.FileSystem.csproj", "{5A1834EA-178F-45E8-A91E-76369A0D156C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackDB.FileSystem.Tests", "PackDB.FileSystem.Tests\PackDB.FileSystem.Tests.csproj", "{6DE2539A-96C6-4D8C-9F46-0F5E9C736D43}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTestApp", "Examples\IntegrationTestApp\IntegrationTestApp.csproj", "{00190E07-EE9F-4813-8900-90693704450B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{5352F789-E495-49F5-B86A-8B7A0E0A0A4C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5A1834EA-178F-45E8-A91E-76369A0D156C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A1834EA-178F-45E8-A91E-76369A0D156C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A1834EA-178F-45E8-A91E-76369A0D156C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A1834EA-178F-45E8-A91E-76369A0D156C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DE2539A-96C6-4D8C-9F46-0F5E9C736D43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DE2539A-96C6-4D8C-9F46-0F5E9C736D43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DE2539A-96C6-4D8C-9F46-0F5E9C736D43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00190E07-EE9F-4813-8900-90693704450B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00190E07-EE9F-4813-8900-90693704450B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00190E07-EE9F-4813-8900-90693704450B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution		
+		{00190E07-EE9F-4813-8900-90693704450B} = {5352F789-E495-49F5-B86A-8B7A0E0A0A4C}
+	EndGlobalSection
+EndGlobal

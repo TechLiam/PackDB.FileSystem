@@ -8,9 +8,9 @@
         <AssemblyVersion>0.1.0</AssemblyVersion>
         <FileVersion>0.1.0</FileVersion>
         <PackageVersion>0.1.0</PackageVersion>
-        <PackageIcon>PackDB.png</PackageIcon>
-        <PackageId>PackDB.Core</PackageId>
-        <Title>PackDB.Core</Title>
+        <PackageIcon>PackDBFileSystem.png</PackageIcon>
+        <Title>PackDB.FileSystem</Title>
+        <PackageId>PackDB.FileSystem</PackageId>
         <Authors>LiamRaper</Authors>
         <Description>PackDB is an abstracted data access layer that uses MessagePack as the Serializer for the it's data. PackDB has been build to allow for ease to extend individual parts or the whole system if desired.</Description>
         <Copyright>The NuGet Package is protected by copyright law and all rights to it are reserved for Liam Raper 2021</Copyright>
@@ -18,21 +18,19 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/TechLiam/PackDB</RepositoryUrl>
         <RepositoryType>GitHub</RepositoryType>
-        <PackageTags>PackDB, MessagePack, Data, Data layer, Storage</PackageTags>
+        <PackageTags>PackDB, PackDB FileSysetm, PackDB File System, File System, FileSystem, MessagePack, Data, Data layer, Storage</PackageTags>
         <PackageReleaseNotes>0.1.0 - Alpha release</PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <NeutralLanguage>en-GB</NeutralLanguage>
-        <AssemblyName>PackDB.Core</AssemblyName>
+        <AssemblyName>PackDB.FileSystem</AssemblyName>
         <SignAssembly>false</SignAssembly>
     </PropertyGroup>
-    
-    <ItemGroup>
-      <PackageReference Include="MessagePack" Version="2.2.85" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    </ItemGroup>
 
     <ItemGroup>
-        <None Include="PackDB.png" Pack="true" PackagePath="\" />
+      <PackageReference Include="PackDB.Core" Version="0.1.0" />
     </ItemGroup>
     
+    <ItemGroup>
+        <None Include="PackDBFileSystem.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
 </Project>
