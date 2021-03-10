@@ -1,0 +1,39 @@
+name: Publishing
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+      - name: Set version
+        uses: rvolo/xml-replace-action@v0.3
+        with:
+          # path in filesystem to xml file
+          filepath: ${{ github.workspace }}/PackDB.FileSystem/PackDB.FileSystem.csproj
+          # Xpath to use when getting nodes
+          xpath: Project/PropertyGroup/*[contains(name(),'Version')]/text()
+          # value to replace with
+          replace: ${{ github.event.release.tag_name }}
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore -c Release
+      - name: Test
+        run: dotnet test
+      - name: Publish NuGet
+        run: dotnet nuget push ${{ github.workspace }}/PackDB.FileSystem/bin/Release/PackDB.FileSystem.${{ github.event.release.tag_name }}.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGETAPIKEY }}
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ github.workspace }}/PackDB.FileSystem/bin/Release/PackDB.FileSystem.${{ github.event.release.tag_name }}.nupkg
+          tag: ${{ github.ref }}
