@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -188,6 +189,24 @@ namespace PackDB.FileSystem.DataWorker
 
                 _logger.LogError("Failed to read data");
                 return null;
+            }
+        }
+
+        public async IAsyncEnumerable<TDataType> ReadAll<TDataType>() where TDataType : DataEntity
+        {
+            using (_logger.BeginScope("{Operation} is {Action} {DataType} with Id ({Id})", nameof(FileDataWorker),
+                "reading all", typeof(TDataType).Name))
+            {
+                var files = FileStreamer.GetAllFileNames(GetFolderName<TDataType>(), "data");
+                if (!files.Any())
+                {
+                    _logger.LogInformation("There is no data to return");
+                }
+                foreach (var file in files)
+                {
+                    var fileId = int.Parse(file);
+                    yield return await Read<TDataType>(fileId);
+                }
             }
         }
 

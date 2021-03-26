@@ -92,6 +92,16 @@ namespace IntegrationTestApp
                     logger.LogInformation($"Phone number: {data.PhoneNumber}");
                 }
 
+                var allData = dataManager.ReadAll<TestIndexData>();
+                logger.LogInformation("Read all data");
+                await foreach (var data in allData)
+                {
+                    logger.LogInformation($"Id: {data.Id}");
+                    logger.LogInformation($"Name: {data.Firstname} {data.Lastname}");
+                    logger.LogInformation($"Year of birth: {data.YearOfBirth}");
+                    logger.LogInformation($"Phone number: {data.PhoneNumber}");
+                }
+
                 await dataManager.Delete<TestIndexData>(2);
 
                 var auditData = new TestAuditData

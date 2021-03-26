@@ -27,7 +27,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="PackDB.Core" Version="0.1.0" />
+      <PackageReference Include="PackDB.Core" Version="0.3.0" />
     </ItemGroup>
     
     <ItemGroup>
