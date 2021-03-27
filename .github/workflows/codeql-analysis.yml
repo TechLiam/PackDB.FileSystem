@@ -9,7 +9,7 @@
 # the `language` matrix defined below to confirm you have the correct set of
 # supported CodeQL languages.
 #
-name: "CodeQL"
+name: "Code security scan"
 
 on:
   push:
@@ -17,12 +17,15 @@ on:
     paths-ignore:
       - '.github/**'
       - 'Examples/**'
+      - 'README.md'
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
     paths-ignore:
       - '.github/**'
       - 'Examples/**'
+      - 'README.md'  
+  workflow_dispatch:
 
 jobs:
   analyze:

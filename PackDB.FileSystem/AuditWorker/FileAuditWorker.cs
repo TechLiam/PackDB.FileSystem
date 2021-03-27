@@ -189,6 +189,7 @@ namespace PackDB.FileSystem.AuditWorker
                 "reading all events", typeof(TDataType).Name, id))
             {
                 var filename = GetFileName<TDataType>(id);
+                if (!await FileStreamer.Exists(filename)) return null;
                 var maxAttempts = MaxAttempts<TDataType>();
                 _logger.LogTrace("Will try to write to {filename} {MaxAttempts} times", filename,
                     maxAttempts >= 0 ? maxAttempts.ToString() : "until success");
