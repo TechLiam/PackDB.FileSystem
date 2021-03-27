@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <LangVersion>default</LangVersion>
         <TargetFrameworks>netcoreapp3.1;netstandard2.1</TargetFrameworks>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Version>0.1.0</Version>
@@ -12,7 +11,7 @@
         <Title>PackDB.FileSystem</Title>
         <PackageId>PackDB.FileSystem</PackageId>
         <Authors>LiamRaper</Authors>
-        <Description>PackDB is an abstracted data access layer that uses MessagePack as the Serializer for the it's data. PackDB has been build to allow for ease to extend individual parts or the whole system if desired.</Description>
+        <Description>PackDB File System build on PackDB Core to allow storage of data on a file system..</Description>
         <Copyright>The NuGet Package is protected by copyright law and all rights to it are reserved for Liam Raper 2021</Copyright>
         <PackageProjectUrl>https://github.com/TechLiam/PackDB</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
