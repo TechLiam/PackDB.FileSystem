@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -117,6 +118,16 @@ namespace IntegrationTestApp
 
                 write = await dataManager.Write(auditData);
                 logger.LogInformation(write ? "Saved data successfully" : "Save data failed");
+
+                var auditLog = await dataManager.GetAuditLog<TestAuditData>(auditData.Id);
+                foreach (var auditLogEntry in auditLog.Entries)
+                {
+                    logger.LogInformation(auditLogEntry.Type.ToString());
+                    foreach (var change in auditLogEntry.Changes)
+                    {
+                        logger.LogInformation("Property {PropertyName} used to be {OldValue} and now is {NewValue}", change.PropertyName, change.OldValue, change.NewValue);
+                    }
+                }
 
                 logger.LogInformation("PackDB integration testing finished");
             }

@@ -19,15 +19,25 @@
         <RepositoryUrl>https://github.com/TechLiam/PackDB</RepositoryUrl>
         <RepositoryType>GitHub</RepositoryType>
         <PackageTags>PackDB, PackDB FileSysetm, PackDB File System, File System, FileSystem, MessagePack, Data, Data layer, Storage</PackageTags>
-        <PackageReleaseNotes>0.1.0 - Alpha release</PackageReleaseNotes>
+        <PackageReleaseNotes>0.1.0 - Alpha release
+0.2.0 - Beta release
+        </PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <NeutralLanguage>en-GB</NeutralLanguage>
         <AssemblyName>PackDB.FileSystem</AssemblyName>
         <SignAssembly>false</SignAssembly>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>bin\Debug\PackDB.FileSystem.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\PackDB.FileSystem.xml</DocumentationFile>
+    </PropertyGroup>
+
     <ItemGroup>
-      <PackageReference Include="PackDB.Core" Version="0.3.1" />
+      <PackageReference Include="PackDB.Core" Version="0.4.0" />
     </ItemGroup>
     
     <ItemGroup>
