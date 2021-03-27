@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
@@ -56,6 +57,18 @@ namespace PackDB.FileSystem.Tests
                 .Setup(x => x.ReadDataFromStream<RetryBasicData>("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id +
                                                                  ".data"))
                 .ReturnsAsync(ExpectedRetryBasicData);
+            MockFileStreamer
+                .Setup(x => x.GetAllFileNames("Data\\BasicData", "data"))
+                .Returns(new List<string>
+                {
+                    ExpectedBasicData.Id.ToString()
+                }.ToArray());
+            MockFileStreamer
+                .Setup(x => x.GetAllFileNames("Data\\RetryBasicData", "data"))
+                .Returns(new List<string>
+                {
+                    ExpectedRetryBasicData.Id.ToString()
+                }.ToArray());
 
             FileDataWorker = new FileDataWorker(MockFileStreamer.Object);
         }
@@ -460,6 +473,97 @@ namespace PackDB.FileSystem.Tests
                 Times.Exactly(2));
         }
 
+        [Test(Author = "PackDB Creator")]
+        public async Task ReadAllWhenThereAreNoFiles()
+        {
+            MockFileStreamer
+                .Setup(x => x.GetAllFileNames("Data\\BasicData", "data"))
+                .Returns(new List<string>().ToArray());
+            var dataSet = FileDataWorker.ReadAll<BasicData>();
+            var results = new List<BasicData>();
+            await foreach(var data in dataSet) results.Add(data);
+            Assert.IsEmpty(results);
+            MockFileStreamer.Verify(x => x.ReadDataFromStream<BasicData>(It.IsAny<string>()), Times.Never);
+        }
+        
+        [Test(Author = "PackDB Creator")]
+        public async Task ReadAllFailsToGetLock()
+        {
+            MockFileStreamer
+                .Setup(x => x.GetLockForFile(It.IsAny<string>()))
+                .ReturnsAsync(false);
+            var dataSet = FileDataWorker.ReadAll<BasicData>();
+            var results = new List<BasicData>();
+            await foreach(var data in dataSet) results.Add(data);
+            Assert.IsEmpty(results);
+            MockFileStreamer.Verify(x => x.GetLockForFile(It.IsAny<string>()), Times.Once);
+            MockFileStreamer.Verify(x => x.ReadDataFromStream<BasicData>(It.IsAny<string>()), Times.Never);
+        }
+
+        [Test(Author = "PackDB Creator")]
+        public async Task ReadAllFailsDueToReadThrowingAnException()
+        {
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<BasicData>(It.IsAny<string>()))
+                .Throws<Exception>();
+            var dataSet = FileDataWorker.ReadAll<BasicData>();
+            var results = new List<BasicData>();
+            await foreach(var data in dataSet) results.Add(data);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"),
+                Times.Once);
+        }
+
+        [Test(Author = "PackDB Creator")]
+        public async Task ReadAllSuccessful()
+        {
+            var dataSet = FileDataWorker.ReadAll<BasicData>();
+            var results = new List<BasicData>();
+            await foreach(var data in dataSet) results.Add(data);
+            Assert.AreSame(ExpectedBasicData, results.ElementAt(0));
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\BasicData\\" + ExpectedBasicData.Id + ".data"),
+                Times.Once);
+        }
+
+        [Test(Author = "PackDB Creator")]
+        public async Task ReadAllFailsToGetLockWithRetry()
+        {
+            MockFileStreamer
+                .Setup(x => x.GetLockForFile(It.IsAny<string>()))
+                .ReturnsAsync(false);
+            var dataSet = FileDataWorker.ReadAll<BasicData>();
+            var results = new List<BasicData>();
+            await foreach(var data in dataSet) results.Add(data);
+            MockFileStreamer.Verify(x => x.ReadDataFromStream<RetryBasicData>(It.IsAny<string>()), Times.Never);
+        }
+
+        [Test(Author = "PackDB Creator")]
+        public async Task ReadAllFailsDueToReadThrowingAnExceptionWithRetry()
+        {
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<RetryBasicData>(It.IsAny<string>()))
+                .Throws<Exception>();
+            var dataSet = FileDataWorker.ReadAll<RetryBasicData>();
+            var results = new List<RetryBasicData>();
+            await foreach(var data in dataSet) results.Add(data);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"),
+                Times.Exactly(3));
+        }
+
+        [Test(Author = "PackDB Creator")]
+        public async Task ReadAllSuccessfulWithRetry()
+        {
+            MockFileStreamer
+                .SetupSequence(x =>
+                    x.ReadDataFromStream<RetryBasicData>("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"))
+                .Throws<Exception>()
+                .ReturnsAsync(ExpectedRetryBasicData);
+            var dataSet = FileDataWorker.ReadAll<RetryBasicData>();
+            var results = new List<RetryBasicData>();
+            await foreach(var data in dataSet) results.Add(data);
+            MockFileStreamer.Verify(x => x.UnlockFile("Data\\RetryBasicData\\" + ExpectedRetryBasicData.Id + ".data"),
+                Times.Exactly(2));
+        }
+
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
         public async Task<bool> ExistsReturnsTrue()
         {
@@ -571,6 +675,9 @@ namespace PackDB.FileSystem.Tests
         [Test(Author = "PackDB Creator", ExpectedResult = 1)]
         public int NextIdWhenThereNoFiles()
         {
+            MockFileStreamer
+                .Setup(x => x.GetAllFileNames("Data\\BasicData", "data"))
+                .Returns(new List<string>().ToArray());
             return FileDataWorker.NextId<BasicData>();
         }
 
@@ -578,7 +685,7 @@ namespace PackDB.FileSystem.Tests
         public int NextIdWhenThereAreFilesButThereNumberIsLessThanOne()
         {
             MockFileStreamer
-                .Setup(x => x.GetAllFileNames("BasicData", "data"))
+                .Setup(x => x.GetAllFileNames("Data\\BasicData", "data"))
                 .Returns(new List<string>
                 {
                     "0"
@@ -586,16 +693,11 @@ namespace PackDB.FileSystem.Tests
             return FileDataWorker.NextId<BasicData>();
         }
 
-        [Test(Author = "PackDB Creator", ExpectedResult = 2)]
-        public int NextIdWhenThereAreFilesAndThereNumberIsGraterThanOne()
+        [Test(Author = "PackDB Creator")]
+        public void NextIdWhenThereAreFilesAndThereNumberIsGraterThanOne()
         {
-            MockFileStreamer
-                .Setup(x => x.GetAllFileNames("Data\\BasicData", "data"))
-                .Returns(new List<string>
-                {
-                    "1"
-                }.ToArray());
-            return FileDataWorker.NextId<BasicData>();
+            var result = FileDataWorker.NextId<BasicData>();
+            Assert.AreEqual(ExpectedBasicData.Id + 1, result);
         }
     }
 }

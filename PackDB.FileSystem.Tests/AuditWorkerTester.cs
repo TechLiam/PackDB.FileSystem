@@ -43,6 +43,9 @@ namespace PackDB.FileSystem.Tests
                 .Setup(x => x.GetLockForFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"))
                 .ReturnsAsync(true);
             MockFileStreamer
+                .Setup(x => x.Exists("Data\\AuditableData\\" + ExpectedData.Id + ".audit"))
+                .ReturnsAsync(true);
+            MockFileStreamer
                 .Setup(x => x.ReadDataFromStream<AuditLog>("Data\\AuditableData\\" + ExpectedData.Id + ".audit"))
                 .ReturnsAsync(CreateExpectedAuditLog);
             MockFileStreamer
@@ -410,6 +413,19 @@ namespace PackDB.FileSystem.Tests
             MockFileStreamer.Verify(x => x.DisposeOfStream(It.IsAny<string>()), Times.Never);
             MockFileStreamer.Verify(x => x.UnlockFile("Data\\AuditableData\\" + ExpectedData.Id + ".audit"),
                 Times.Once);
+            return result;
+        }
+
+        [Test(Author = "PackDB Creator", ExpectedResult = null)]
+        public async Task<AuditLog> ReadAllEventsAuditDoesNotExist()
+        {
+            MockFileStreamer
+                .Setup(x => x.Exists(It.IsAny<string>()))
+                .ReturnsAsync(false);
+            var result = await FileAuditWorker.ReadAllEvents<AuditableData>(ExpectedData.Id);
+            MockFileStreamer.Verify(x => x.GetLockForFile(It.IsAny<string>()), Times.Never);
+            MockFileStreamer.Verify(x => x.UnlockFile(It.IsAny<string>()), Times.Never);
+            MockFileStreamer.Verify(x => x.ReadDataFromStream<AuditLog>(It.IsAny<string>()), Times.Never);
             return result;
         }
 

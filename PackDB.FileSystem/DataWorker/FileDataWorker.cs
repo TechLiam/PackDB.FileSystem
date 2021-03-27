@@ -205,7 +205,9 @@ namespace PackDB.FileSystem.DataWorker
                 foreach (var file in files)
                 {
                     var fileId = int.Parse(file);
-                    yield return await Read<TDataType>(fileId);
+                    var data = await Read<TDataType>(fileId);
+                    if (data is null) continue;
+                    yield return data;
                 }
             }
         }
