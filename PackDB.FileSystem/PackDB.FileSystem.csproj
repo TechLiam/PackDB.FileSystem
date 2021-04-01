@@ -20,6 +20,7 @@
         <PackageTags>PackDB, PackDB FileSysetm, PackDB File System, File System, FileSystem, MessagePack, Data, Data layer, Storage</PackageTags>
         <PackageReleaseNotes>0.1.0 - Alpha release
 0.2.0 - Beta release
+0.3.0 - Fixed issue with getting next id when no data exists for that type
         </PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <NeutralLanguage>en-GB</NeutralLanguage>
