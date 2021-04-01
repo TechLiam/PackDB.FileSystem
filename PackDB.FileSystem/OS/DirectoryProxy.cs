@@ -8,7 +8,7 @@ namespace PackDB.FileSystem.OS
     {
         public string[] GetFiles(string path, string fileExtension)
         {
-            return Directory.GetFiles(path, "*." + fileExtension, SearchOption.TopDirectoryOnly);
+            return Directory.Exists(path) ? Directory.GetFiles(path, "*." + fileExtension, SearchOption.TopDirectoryOnly) : new string[0];
         }
     }
 }
