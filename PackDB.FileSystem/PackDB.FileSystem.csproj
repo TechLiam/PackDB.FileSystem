@@ -21,6 +21,7 @@
         <PackageReleaseNotes>0.1.0 - Alpha release
 0.2.0 - Beta release
 0.3.0 - Fixed issue with getting next id when no data exists for that type
+0.4.0 - Handled unique indexes
         </PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <NeutralLanguage>en-GB</NeutralLanguage>
