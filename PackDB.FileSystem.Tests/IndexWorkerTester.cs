@@ -35,9 +35,18 @@ namespace PackDB.FileSystem.Tests
                 IndexValue1 = Randomizer.GetString()
             };
 
+            UniqueIndexData = new UniqueIndexableData()
+            {
+                Id = Randomizer.Next(),
+                IndexValue1 = Randomizer.GetString()
+            };
+
             MockFileStreamer = new Mock<IFileStreamer>();
             MockFileStreamer
                 .Setup(x => x.Exists("Data\\IndexableData\\IndexValue1.index"))
+                .ReturnsAsync(true);
+            MockFileStreamer
+                .Setup(x => x.Exists("Data\\UniqueIndexableData\\IndexValue1.index"))
                 .ReturnsAsync(true);
             MockFileStreamer
                 .Setup(x => x.ReadDataFromStream<Index<string>>("Data\\IndexableData\\IndexValue1.index"))
@@ -62,6 +71,22 @@ namespace PackDB.FileSystem.Tests
                         {
                             Value = IndexKey,
                             Ids = ExpectedIds
+                        }
+                    }
+                });
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("Data\\UniqueIndexableData\\IndexValue1.index"))
+                .ReturnsAsync(new Index<object>
+                {
+                    Keys = new List<IndexKey<object>>
+                    {
+                        new IndexKey<object>
+                        {
+                            Value = IndexKey,
+                            Ids = new List<int>()
+                            {
+                                UniqueIndexData.Id
+                            }
                         }
                     }
                 });
@@ -110,6 +135,7 @@ namespace PackDB.FileSystem.Tests
         private string IndexKey { get; set; }
         private List<int> ExpectedIds { get; set; }
         private IndexableData IndexData { get; set; }
+        private UniqueIndexableData UniqueIndexData { get; set; }
         private Randomizer Randomizer { get; set; }
         private Mock<IFileStreamer> MockFileStreamer { get; set; }
 
@@ -270,6 +296,50 @@ namespace PackDB.FileSystem.Tests
                             y.Keys.ElementAt(0).Ids.ElementAt(3) == IndexData.Id
                         )
                     ), Times.Once);
+            return result;
+        }
+
+        [Test(Author = "PackDB Creator", ExpectedResult = true)]
+        public async Task<bool> IndexWhenIndexDoesExistAndTheKeyIsUniqueAndAlreadySet()
+        {
+            UniqueIndexData.IndexValue1 = IndexKey;
+            var result = await FileIndexWorker.Index(UniqueIndexData);
+            MockFileStreamer
+                .Verify(x =>
+                    x.WriteDataToStream(
+                        It.IsAny<string>(),
+                        It.IsAny<Index<object>>()
+                    ), Times.Never);
+            return result;
+        }
+
+        [Test(Author = "PackDB Creator", ExpectedResult = false)]
+        public async Task<bool> IndexWhenIndexDoesExistAndTheKeyIsUniqueAndAlreadyUsed()
+        {
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<object>>("Data\\UniqueIndexableData\\IndexValue1.index"))
+                .ReturnsAsync(new Index<object>
+                {
+                    Keys = new List<IndexKey<object>>
+                    {
+                        new IndexKey<object>
+                        {
+                            Value = IndexKey,
+                            Ids = new List<int>()
+                            {
+                                Randomizer.Next()
+                            }
+                        }
+                    }
+                });
+            UniqueIndexData.IndexValue1 = IndexKey;
+            var result = await FileIndexWorker.Index(UniqueIndexData);
+            MockFileStreamer
+                .Verify(x =>
+                    x.WriteDataToStream(
+                        It.IsAny<string>(),
+                        It.IsAny<Index<object>>()
+                    ), Times.Never);
             return result;
         }
 

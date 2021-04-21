@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +36,7 @@ namespace IntegrationTestApp
             {
                 logger.LogInformation("PackDB integration testing stating");
                 var dataManager = serviceProvider.GetService<IDataManager>();
-
+                
                 var write = await dataManager.Write(new TestData
                 {
                     Id = 1,
@@ -45,6 +46,32 @@ namespace IntegrationTestApp
                 });
                 logger.LogInformation(write ? "Saved data successfully" : "Save data failed");
 
+                var nestedData = new TestWithNestedData()
+                {
+                    Id = 1,
+                    Name = "Nested test",
+                    Nested = new List<TestNestedData>()
+                    {
+                        new TestNestedData()
+                        {
+                            Id = 1,
+                            Value = "One"
+                        },
+                        new TestNestedData()
+                        {
+                            Id = 2,
+                            Value = "Two"
+                        },
+                        new TestNestedData()
+                        {
+                            Id = 3,
+                            Value = "Three"
+                        }
+                    }
+                };
+                write = await dataManager.Write(nestedData);
+                logger.LogInformation(write ? "Saved nested data successfully" : "Save nested data failed");
+                
                 var read = await dataManager.Read<TestData>(1);
                 if (read != null)
                 {
@@ -93,6 +120,26 @@ namespace IntegrationTestApp
                     logger.LogInformation($"Phone number: {data.PhoneNumber}");
                 }
 
+                write = await dataManager.Write(new TestUniqueIndexData
+                {
+                    Id = 2,
+                    Firstname = "Test",
+                    Lastname = "Person",
+                    YearOfBirth = 1985,
+                    PhoneNumber = "0123456789"
+                });
+                logger.LogInformation(write ? "Saved data successfully" : "Save data failed");
+
+                write = await dataManager.Write(new TestUniqueIndexData
+                {
+                    Id = 3,
+                    Firstname = "Test",
+                    Lastname = "Person",
+                    YearOfBirth = 1985,
+                    PhoneNumber = "0123456789"
+                });
+                logger.LogInformation(!write ? "Saved data failed successfully" : "Data saved when it shouldn't have");
+                
                 var allData = dataManager.ReadAll<TestIndexData>();
                 logger.LogInformation("Read all data");
                 await foreach (var data in allData)

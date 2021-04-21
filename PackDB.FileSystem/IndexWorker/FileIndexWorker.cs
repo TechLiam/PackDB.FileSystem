@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PackDB.Core;
@@ -147,11 +148,23 @@ namespace PackDB.FileSystem.IndexWorker
                             else
                             {
                                 _logger.LogTrace("Index key already exists");
-                                if (key.Ids.All(x => x != data.Id))
+                                if (indexProperty.GetCustomAttributes(typeof(IndexAttribute), true)
+                                    .OfType<IndexAttribute>().Any(x => x.IsUnique) && 
+                                    key.Ids.Any() &&
+                                    key.Ids.All(x => x != data.Id))
                                 {
-                                    _logger.LogTrace("Added id to index key");
-                                    key.Ids.Add(data.Id);
-                                    hasChanges = true;
+                                    _logger.LogError("Unable to index data as unique index would be invalidated");
+                                    indexSuccess = false;
+                                    hasChanges = false;
+                                }
+                                else
+                                {
+                                    if (key.Ids.All(x => x != data.Id))
+                                    {
+                                        _logger.LogTrace("Added id to index key");
+                                        key.Ids.Add(data.Id);
+                                        hasChanges = true;
+                                    }
                                 }
                             }
                         }
