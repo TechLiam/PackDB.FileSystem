@@ -119,7 +119,18 @@ namespace IntegrationTestApp
                     logger.LogInformation($"Year of birth: {data.YearOfBirth}");
                     logger.LogInformation($"Phone number: {data.PhoneNumber}");
                 }
-
+                
+                var indexKeys = dataManager.ReadIndexKeys<TestIndexData, string>(x => x.PhoneNumber);
+                logger.LogInformation("Read keys from index");
+                await foreach (var indexKey in indexKeys)
+                {
+                    logger.LogInformation($"Key: {indexKey.Value}");
+                    foreach (var id in indexKey.Ids)
+                    {
+                        logger.LogInformation($"Id: {id}");
+                    }
+                }
+                
                 write = await dataManager.Write(new TestUniqueIndexData
                 {
                     Id = 2,

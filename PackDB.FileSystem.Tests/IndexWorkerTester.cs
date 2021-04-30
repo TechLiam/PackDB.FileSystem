@@ -233,7 +233,43 @@ namespace PackDB.FileSystem.Tests
             Assert.AreEqual(ExpectedIds.Count(), result.Count());
             for (var i = 0; i < ExpectedIds.Count(); i++) Assert.IsTrue(result.Contains(ExpectedIds[i]));
         }
+        
+        [Test(Author = "PackDB Creator")]
+        public async Task GetKeysFromIndexWhenReadDataFromStreamReturnsAnEmptyIndex()
+        {
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<string>>("Data\\IndexableData\\IndexValue1.index"))
+                .ReturnsAsync(new Index<string>());
+            var data = FileIndexWorker.GetKeysFromIndex<IndexableData, string>("IndexValue1");
+            var result = new List<IndexKey<string>>();
+            await foreach (var d in data) result.Add(d);
+            Assert.IsEmpty(result);
+        }
 
+        [Test(Author = "PackDB Creator")]
+        public async Task GetKeysFromIndexWhenReadDataFromStreamReturnsAnIndexWithNoKeys()
+        {
+            MockFileStreamer
+                .Setup(x => x.ReadDataFromStream<Index<string>>("Data\\IndexableData\\IndexValue1.index"))
+                .ReturnsAsync(new Index<string>
+                {
+                    Keys = new List<IndexKey<string>>()
+                });
+            var data = FileIndexWorker.GetKeysFromIndex<IndexableData, string>("IndexValue1");
+            var result = new List<IndexKey<string>>();
+            await foreach (var d in data) result.Add(d);
+            Assert.IsEmpty(result);
+        }
+
+        [Test(Author = "PackDB Creator")]
+        public async Task GetKeysFromIndexWhenReadDataFromStreamReturnsAnIndexWithTheKeyAndIds()
+        {
+            var data = FileIndexWorker.GetKeysFromIndex<IndexableData, string>("IndexValue1");
+            var result = new List<IndexKey<string>>();
+            await foreach (var d in data) result.Add(d);
+            Assert.AreEqual(1, result.Count(x => x.Value == IndexKey));
+        }
+        
         [Test(Author = "PackDB Creator", ExpectedResult = true)]
         public async Task<bool> IndexDataTypeWithNoIndexedProperties()
         {

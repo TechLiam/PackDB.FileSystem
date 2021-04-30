@@ -22,6 +22,7 @@
 0.2.0 - Beta release
 0.3.0 - Fixed issue with getting next id when no data exists for that type
 0.4.0 - Handled unique indexes
+0.5.0 - Allowed keys to be read from index
         </PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <NeutralLanguage>en-GB</NeutralLanguage>
@@ -38,7 +39,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="PackDB.Core" Version="0.6.0" />
+      <PackageReference Include="PackDB.Core" Version="0.7.0" />
     </ItemGroup>
     
     <ItemGroup>

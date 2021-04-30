@@ -87,6 +87,27 @@ namespace PackDB.FileSystem.IndexWorker
             }
         }
 
+        public async IAsyncEnumerable<IndexKey<TKeyType>> GetKeysFromIndex<TDataType, TKeyType>(string indexName) where TDataType : DataEntity
+        {
+            using (_logger.BeginScope("{Operation} is {Action} {IndexName} for {DataType}}",
+                nameof(FileIndexWorker), "getting keys from index", indexName, typeof(TDataType).Name))
+            {
+                var index = await FileStreamer.ReadDataFromStream<Index<TKeyType>>(GetFileName<TDataType>(indexName));
+                var keys = index.Keys;
+                if (keys == null)
+                {
+                    _logger.LogWarning("The index doesn't have the keys");
+                    yield break;
+                }
+
+                foreach (var key in keys)
+                {
+                    _logger.LogInformation("Returning {KeyValue}", key.Value, key);
+                    yield return key;
+                }
+            }
+        }
+
         public async Task<bool> Index<TDataType>(TDataType data) where TDataType : DataEntity
         {
             using (_logger.BeginScope("{Operation} is {Action} for {DataType}", nameof(FileIndexWorker), "indexing",

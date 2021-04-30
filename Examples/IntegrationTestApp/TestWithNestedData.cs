@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using MessagePack;
 using PackDB.Core.Data;
 
 namespace IntegrationTestApp
 {
+    [ExcludeFromCodeCoverage]
     public class TestWithNestedData : DataEntity
     {
         [Key(2)]
