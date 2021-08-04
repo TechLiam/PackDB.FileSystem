@@ -118,6 +118,7 @@ namespace IntegrationTestApp
                     logger.LogInformation($"Name: {data.Firstname} {data.Lastname}");
                     logger.LogInformation($"Year of birth: {data.YearOfBirth}");
                     logger.LogInformation($"Phone number: {data.PhoneNumber}");
+                    logger.LogInformation($"Priority number: {data.PriorityNumber}");
                 }
                 
                 var indexKeys = dataManager.ReadIndexKeys<TestIndexData, string>(x => x.PhoneNumber);
@@ -130,6 +131,10 @@ namespace IntegrationTestApp
                         logger.LogInformation($"Id: {id}");
                     }
                 }
+
+                var nulledIndexValue = await dataManager.Read<TestIndexData>(2);
+                nulledIndexValue.PriorityNumber = 2;
+                await dataManager.Write(nulledIndexValue);
                 
                 write = await dataManager.Write(new TestUniqueIndexData
                 {

@@ -141,7 +141,16 @@ namespace PackDB.FileSystem.IndexWorker
                             index = await FileStreamer.ReadDataFromStream<Index<object>>(indexFileName);
                             _logger.LogTrace("Loaded index data");
                             var otherKeys = index.Keys
-                                .Where(x => (x.Value is null || !x.Value.Equals(indexKey)) && x.Ids.Any(y => y == data.Id))
+                                .Where(x => (
+                                        (x.Value is null && indexKey != null) || 
+                                        (indexKey is null && x.Value != null) || 
+                                        (
+                                            x.Value is null ||
+                                            !x.Value.Equals(indexKey)
+                                        )
+                                    ) && 
+                                    x.Ids.Any(y => y == data.Id)
+                                )
                                 .ToArray();
                             if (otherKeys.Any())
                             {
@@ -155,7 +164,7 @@ namespace PackDB.FileSystem.IndexWorker
                                 _logger.LogTrace("Removed old index key");
                             }
 
-                            var key = index.Keys.FirstOrDefault(x => x.Value.Equals(indexKey));
+                            var key = index.Keys.FirstOrDefault(x => (x.Value is null && indexKey is null) || (x.Value != null && x.Value.Equals(indexKey)));
                             if (key is null)
                             {
                                 _logger.LogTrace("Index key doesn't already exist");

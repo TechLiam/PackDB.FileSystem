@@ -24,6 +24,7 @@
 0.4.0 - Handled unique indexes
 0.5.0 - Allowed keys to be read from index
 0.5.1 - Fixed issue with indexing nullable values where moving off of null would throw an exception
+0.5.2 - More fixing for nullable indexed values
         </PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <NeutralLanguage>en-GB</NeutralLanguage>
