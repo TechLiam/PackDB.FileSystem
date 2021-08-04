@@ -141,7 +141,7 @@ namespace PackDB.FileSystem.IndexWorker
                             index = await FileStreamer.ReadDataFromStream<Index<object>>(indexFileName);
                             _logger.LogTrace("Loaded index data");
                             var otherKeys = index.Keys
-                                .Where(x => !x.Value.Equals(indexKey) && x.Ids.Any(y => y == data.Id))
+                                .Where(x => (x.Value is null || !x.Value.Equals(indexKey)) && x.Ids.Any(y => y == data.Id))
                                 .ToArray();
                             if (otherKeys.Any())
                             {
